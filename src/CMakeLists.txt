@@ -1,0 +1,3 @@
+add_library(RapidCollisionDetection CollisionChecker.cpp)
+add_library(RapidQuadcopterTrajectories TrajectoryGenerator.cpp SingleAxisTrajectory.cpp)
+include_directories(${RapidCollisionDetection_SOURCE_DIR}/include)

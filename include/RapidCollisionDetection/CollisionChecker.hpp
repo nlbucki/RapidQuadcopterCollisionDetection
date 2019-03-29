@@ -1,10 +1,10 @@
 #pragma once
-#include "Trajectory.hpp"
-#include "ConvexObj.hpp"
 #include <memory>
+#include <algorithm>
+#include "CommonMath/Trajectory.hpp"
+#include "CommonMath/ConvexObj.hpp"
 #include "RootFinder/quartic.hpp"
 
-template<typename Real>
 class CollisionChecker {
  public:
 
@@ -14,16 +14,16 @@ class CollisionChecker {
     CollisionIndeterminable = 2,
   };
 
-  CollisionChecker(Trajectory<Real> traj)
+  CollisionChecker(Trajectory traj)
       : _traj(traj) {
   }
 
   // Checks for collision between _traj and half-plane
-  CollisionResult CollisionCheck(Boundary<Real> boundary);
+  CollisionResult CollisionCheck(Boundary boundary);
 
   // Checks for collision between _traj and obstacle
-  CollisionResult CollisionCheck(std::shared_ptr<ConvexObj<Real>> obstacle,
-                                 Real minTimeSection);
+  CollisionResult CollisionCheck(std::shared_ptr<ConvexObj> obstacle,
+                                 double minTimeSection);
 
   static const char* GetCollisionResultName(CollisionResult fr) {
     switch (fr) {
@@ -40,8 +40,8 @@ class CollisionChecker {
  private:
 
   CollisionResult CollisionCheckSection(
-      Real ts, Real tf, std::shared_ptr<ConvexObj<Real>> obstacle,
-      Real minTimeSection);
+      double ts, double tf, std::shared_ptr<ConvexObj> obstacle,
+      double minTimeSection);
 
-  Trajectory<Real> _traj;
+  Trajectory _traj;
 };

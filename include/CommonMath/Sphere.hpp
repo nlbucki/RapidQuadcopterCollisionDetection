@@ -1,31 +1,30 @@
 #pragma once
-#include "ConvexObj.hpp"
-#include "Common/Math/Rotation.hpp"
+#include "CommonMath/ConvexObj.hpp"
+#include "CommonMath/Rotation.hpp"
 
-template<typename Real>
-class Sphere : public ConvexObj<Real> {
+class Sphere : public ConvexObj {
  public:
-  Sphere(Vec3<Real> center, Real radius)
+  Sphere(Vec3 center, double radius)
       : _centerPoint(center),
         _radius(radius) {
     // Side lengths must be positive
     assert(radius > 0);
   }
 
-  Boundary<Real> GetTangentPlane(Vec3<Real> const testPoint) {
+  Boundary GetTangentPlane(Vec3 const testPoint) {
     // Rotate into local coordinate frame
-    Boundary<Real> bound;
+    Boundary bound;
     bound.normal = (testPoint - _centerPoint).GetUnitVector();
     bound.point = (testPoint - _centerPoint).GetUnitVector() * _radius
         + _centerPoint;
     return bound;
   }
 
-  bool IsPointInside(Vec3<Real> const testPoint) {
+  bool IsPointInside(Vec3 const testPoint) {
     return (testPoint - _centerPoint).GetNorm2() <= _radius;
   }
 
-  bool IsObstacleInside(Vec3<Real> minCorner, Vec3<Real> maxCorner) {
+  bool IsObstacleInside(Vec3 minCorner, Vec3 maxCorner) {
     // An approximation, obstacles near the corners are erroneously declared inside
     return (_centerPoint.x >= minCorner.x - _radius)
         && (_centerPoint.x <= maxCorner.x + _radius)
@@ -36,7 +35,7 @@ class Sphere : public ConvexObj<Real> {
   }
 
  private:
-  Vec3<Real> _centerPoint;  // The center in the global coordinate system
-  Real _radius;
+  Vec3 _centerPoint;  // The center in the global coordinate system
+  double _radius;
 
 };

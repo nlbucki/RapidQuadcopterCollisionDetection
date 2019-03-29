@@ -1,12 +1,10 @@
 #pragma once
-#include "ConvexObj.hpp"
-#include "Common/Math/Rotation.hpp"
+#include "CommonMath/ConvexObj.hpp"
+#include "CommonMath/Rotation.hpp"
 
-template<typename Real>
-class RectPrism : public ConvexObj<Real> {
-  static inline Real tabs(Real in);
+class RectPrism : public ConvexObj {
  public:
-  RectPrism(Vec3<Real> center, Vec3<Real> sideLengths, Rotation<Real> rotation)
+  RectPrism(Vec3 center, Vec3 sideLengths, Rotation rotation)
       : _centerPoint(center),
         _sideLengths(sideLengths),
         _rotation(rotation),
@@ -15,12 +13,12 @@ class RectPrism : public ConvexObj<Real> {
     assert(sideLengths.x > 0 && sideLengths.y > 0 && sideLengths.z > 0);
   }
 
-  Boundary<Real> GetTangentPlane(Vec3<Real> const testPoint) {
+  Boundary GetTangentPlane(Vec3 const testPoint) {
     // Rotate into local coordinate frame
-    Vec3<Real> p = _rotationInv * (testPoint - _centerPoint);
+    Vec3 p = _rotationInv * (testPoint - _centerPoint);
 
     // Compute Euclidian projection onto cube
-    Boundary<Real> bound;
+    Boundary bound;
     for (int i = 0; i < 3; i++) {
       if (p[i] < -_sideLengths[i] / 2) {
         bound.point[i] = -_sideLengths[i] / 2;
@@ -37,16 +35,16 @@ class RectPrism : public ConvexObj<Real> {
     return bound;
   }
 
-  bool IsPointInside(Vec3<Real> const testPoint) {
-    Vec3<Real> p = _rotationInv * (testPoint - _centerPoint);
-    return (tabs(p.x) <= _sideLengths.x / 2)
-        && (tabs(p.y) <= _sideLengths.y / 2)
-        && (tabs(p.z) <= _sideLengths.z / 2);
+  bool IsPointInside(Vec3 const testPoint) {
+    Vec3 p = _rotationInv * (testPoint - _centerPoint);
+    return (fabs(p.x) <= _sideLengths.x / 2)
+        && (fabs(p.y) <= _sideLengths.y / 2)
+        && (fabs(p.z) <= _sideLengths.z / 2);
   }
 
-  bool IsObstacleInside(Vec3<Real> minCorner, Vec3<Real> maxCorner) {
+  bool IsObstacleInside(Vec3 minCorner, Vec3 maxCorner) {
     // Find sphere that encloses obstacle and use that
-    Real radius = (_sideLengths/2).GetNorm2();
+    double radius = (_sideLengths/2).GetNorm2();
     return (_centerPoint.x >= minCorner.x - radius)
         && (_centerPoint.x <= maxCorner.x + radius)
         && (_centerPoint.y >= minCorner.y - radius)
@@ -54,31 +52,22 @@ class RectPrism : public ConvexObj<Real> {
         && (_centerPoint.z >= minCorner.z - radius)
         && (_centerPoint.z <= maxCorner.z + radius);;
   }
-  void SetCenterPoint(Vec3<Real> center){
+  void SetCenterPoint(Vec3 center){
     _centerPoint = center;
   }
-  void SetSideLengths(Vec3<Real> sideLen) {
+  void SetSideLengths(Vec3 sideLen) {
     _sideLengths = sideLen;
   }
-  void SetRotation(Rotation<Real> rot) {
+  void SetRotation(Rotation rot) {
     _rotation = rot;
     _rotationInv = rot.Inverse();
   }
 
  private:
 
-  Vec3<Real> _centerPoint;  // The center of the prism in the global coordinate system
-  Vec3<Real> _sideLengths;  // The length of each side (x, y, z)
-  Rotation<Real> _rotation, _rotationInv;  // Rotation from global coordinate system to local coordinate system TODO: Is this true?
+  Vec3 _centerPoint;  // The center of the prism in the global coordinate system
+  Vec3 _sideLengths;  // The length of each side (x, y, z)
+  Rotation _rotation, _rotationInv;  // Rotation from global coordinate system to local coordinate system TODO: Is this true?
 
 };
-
-template<>
-inline float RectPrism<float>::tabs(float in) {
-  return fabsf(in);
-}
-template<>
-inline double RectPrism<double>::tabs(double in) {
-  return fabs(in);
-}
 

@@ -4,18 +4,17 @@
 #include <fstream>
 #include <memory>
 #include <vector>
-#include "Components/TrajectoryGenerator/TrajectoryGenerator.hpp"
-#include "Components/TrajectoryGenerator/ConvexObj.hpp"
-#include "Components/TrajectoryGenerator/RectPrism.hpp"
-#include "Components/TrajectoryGenerator/Sphere.hpp"
-#include "Components/TrajectoryGenerator/CollisionChecker.hpp"
+#include "CommonMath/ConvexObj.hpp"
+#include "CommonMath/RectPrism.hpp"
+#include "CommonMath/Sphere.hpp"
+#include "RapidCollisionDetection/CollisionChecker.hpp"
+#include "RapidQuadcopterTrajectories/RapidTrajectoryGenerator.hpp"
 
 using namespace std;
 using namespace std::chrono;
 using namespace RapidQuadrocopterTrajectoryGenerator;
 
-template<typename Real>
-string toCSV(const Vec3<Real> v) {
+string toCSV(const Vec3 v) {
   stringstream ss;
   ss << v.x << "," << v.y << "," << v.z << ",";
   return ss.str();
@@ -58,10 +57,10 @@ int main(void) {
   uniform_real_distribution<> randTime(timeRangeMin, timeRangeMax);
 
   // Constants
-  Vec3d gravity = Vec3d(0, 0, -9.81);  //[m/s**2]
-  Vec3d pos0(-posRange, 0, 0);  //position
-  Vec3d velf(0, 0, 0);  //velocity
-  Vec3d accf(0, 0, 0);  //acceleration
+  Vec3 gravity = Vec3(0, 0, -9.81);  //[m/s**2]
+  Vec3 pos0(-posRange, 0, 0);  //position
+  Vec3 velf(0, 0, 0);  //velocity
+  Vec3 accf(0, 0, 0);  //acceleration
 
   ofstream monteSim, monteReadme, treeParams;
   monteSim.open("Logs/forestSimV" + to_string(version) + ".csv");  // For storing data
@@ -70,7 +69,7 @@ int main(void) {
   monteReadme << "numTrees = " << numTrees << endl;
   monteReadme << "numSims = " << numSims << endl;
   monteReadme << "numTrajToGeneratePerSim = " << numTrajToGeneratePerSim
-              << endl;
+      << endl;
   monteReadme << "fmin = " << fmin << endl;
   monteReadme << "fmax = " << fmax << endl;
   monteReadme << "wmax = " << wmax << endl;
@@ -87,25 +86,23 @@ int main(void) {
   monteReadme << "treeSideLen = " << treeSideLen << endl;
   monteReadme << "treeHeight = " << treeHeight << endl;
 
-  Vec3d objPos[5] = { Vec3d(-1.75, 1.5, 0), Vec3d(0.5, -1.5, 0), Vec3d(1.5, 0.5,
-                                                                       0),
-      Vec3d(-1.0, -1.0, 0), Vec3d(0.0, 0.8, -0.3) };
-  Vec3d objDim(treeSideLen, treeSideLen, treeHeight);
-  Rotationd objRot[5] =
-      { Rotationd::Identity(), Rotationd::Identity(), Rotationd::Identity(),
-          Rotationd::FromAxisAngle(Vec3d(1, 0, 0).GetUnitVector(),
-                                   45 * M_PI / 180), Rotationd::FromAxisAngle(
-              Vec3d(1, 0, 0).GetUnitVector(), -45 * M_PI / 180) };
+  Vec3 objPos[5] = { Vec3(-1.75, 1.5, 0), Vec3(0.5, -1.5, 0), Vec3(1.5, 0.5, 0),
+      Vec3(-1.0, -1.0, 0), Vec3(0.0, 0.8, -0.3) };
+  Vec3 objDim(treeSideLen, treeSideLen, treeHeight);
+  Rotation objRot[5] = { Rotation::Identity(), Rotation::Identity(),
+      Rotation::Identity(), Rotation::FromAxisAngle(
+          Vec3(1, 0, 0).GetUnitVector(), 45 * M_PI / 180),
+      Rotation::FromAxisAngle(Vec3(1, 0, 0).GetUnitVector(), -45 * M_PI / 180) };
 
   // Define tree positions
-  vector<shared_ptr<ConvexObj<double>>> obstacles;
+  vector < shared_ptr<ConvexObj> > obstacles;
   for (int i = 0; i < numTrees; i++) {
     treeParams << toCSV(objPos[i]);
     treeParams << toCSV(objDim);
     treeParams << toCSV(objRot[i].ToVectorPartOfQuaternion());
     treeParams << "\n";
     obstacles.push_back(
-        make_shared<RectPrism<double>>(objPos[i], objDim, objRot[i]));
+        make_shared < RectPrism > (objPos[i], objDim, objRot[i]));
   }
 
   treeParams.close();
@@ -115,7 +112,7 @@ int main(void) {
   int numStateInfeasible = 0;
   int numStateIndeterminable = 0;
   int numInputInfeas = 0;
-  long totalDefTime = 0;
+//  long totalDefTime = 0;
   long totalGenTime = 0;
   long totalInputCheckTime = 0;
   long totalStateCheckTime = 0;
@@ -126,12 +123,12 @@ int main(void) {
   for (int simNum = 0; simNum < numSims; simNum++) {
     if (simNum % 1000 == 0) {
       cout << "\tFraction complete: " << double(simNum) / double(numSims)
-           << endl;
+          << endl;
     }
     //Define the trajectory starting state:
-    Vec3d vel0(randVelX(gen), randVelYZ(gen), randVelYZ(gen));  //velocity
-    Vec3d acc0(randAccX(gen), randAccYZ(gen), randAccYZ(gen));  //acceleration
-    RapidTrajectoryGenerator<double> traj(pos0, vel0, acc0, gravity);
+    Vec3 vel0(randVelX(gen), randVelYZ(gen), randVelYZ(gen));  //velocity
+    Vec3 acc0(randAccX(gen), randAccYZ(gen), randAccYZ(gen));  //acceleration
+    RapidTrajectoryGenerator traj(pos0, vel0, acc0, gravity);
     traj.SetGoalVelocity(velf);
     traj.SetGoalAcceleration(accf);
 
@@ -145,7 +142,7 @@ int main(void) {
           high_resolution_clock::now();
       high_resolution_clock::time_point startGen = high_resolution_clock::now();
       //define the goal state:
-      Vec3d posf(randPos(gen), randPos(gen), randPos(gen));  //position
+      Vec3 posf(randPos(gen), randPos(gen), randPos(gen));  //position
       traj.SetGoalPosition(posf);
       //define the duration:
       double Tf = randTime(gen);
@@ -159,26 +156,26 @@ int main(void) {
       // Check input feasibility
       high_resolution_clock::time_point startInputFeas =
           high_resolution_clock::now();
-      RapidTrajectoryGenerator<double>::InputFeasibilityResult inputFeas = traj
+      RapidTrajectoryGenerator::InputFeasibilityResult inputFeas = traj
           .CheckInputFeasibility(fmin, fmax, wmax, minTimeSec);
       high_resolution_clock::time_point endInputFeas =
           high_resolution_clock::now();
       long nsInputFeasTime = duration_cast < nanoseconds
           > (endInputFeas - startInputFeas).count();
       totalInputCheckTime += nsInputFeasTime;
-      if (inputFeas != RapidTrajectoryGenerator<double>::InputFeasible) {
+      if (inputFeas != RapidTrajectoryGenerator::InputFeasible) {
         numInputInfeas++;
       }
 
       // Check state feasibility
       high_resolution_clock::time_point startStateFeas =
           high_resolution_clock::now();
-      CollisionChecker<double>::CollisionResult stateFeas = CollisionChecker<
-          double>::NoCollision;
+      CollisionChecker::CollisionResult stateFeas =
+          CollisionChecker::NoCollision;
       for (auto obs : obstacles) {
-        CollisionChecker<double> checker(traj.GetTrajectory());
+        CollisionChecker checker(traj.GetTrajectory());
         stateFeas = checker.CollisionCheck(obs, minTimeSec);
-        if (stateFeas != CollisionChecker<double>::NoCollision) {
+        if (stateFeas != CollisionChecker::NoCollision) {
           break;
         }
       }
@@ -188,7 +185,7 @@ int main(void) {
           > (endStateFeas - startStateFeas).count();
       totalStateCheckTime += nsStateCheckTime;
       switch (stateFeas) {
-        case RapidTrajectoryGenerator<double>::StateFeasible:
+        case RapidTrajectoryGenerator::StateFeasible:
           numStateFeasible++;
           if (!firstFeasTrajFound) {
             firstFeasTrajFound = true;
@@ -202,10 +199,10 @@ int main(void) {
             }
           }
           break;
-        case RapidTrajectoryGenerator<double>::StateInfeasible:
+        case RapidTrajectoryGenerator::StateInfeasible:
           numStateInfeasible++;
           break;
-        case RapidTrajectoryGenerator<double>::StateIndeterminable:
+        case RapidTrajectoryGenerator::StateIndeterminable:
           numStateIndeterminable++;
           break;
       }
@@ -231,7 +228,8 @@ int main(void) {
       }
     }
     high_resolution_clock::time_point allTrajEnd = high_resolution_clock::now();
-    nsAllTrajTime += duration_cast < nanoseconds > (allTrajEnd - allTrajStart).count();
+    nsAllTrajTime += duration_cast < nanoseconds
+        > (allTrajEnd - allTrajStart).count();
     if (!firstFeasTrajFound) {
       cout << "NO FEASIBLE TRAJECTORIES FOUND!" << endl;
     }
@@ -242,33 +240,26 @@ int main(void) {
 
   monteReadme << endl;
   monteReadme << "\tAverage gen time [ns] = "
-              << ((double) totalGenTime) / numTrajToGeneratePerSim / numSims
-              << endl;
-  monteReadme
-      << "\tAverage input feasibility check time [ns] = "
+      << ((double) totalGenTime) / numTrajToGeneratePerSim / numSims << endl;
+  monteReadme << "\tAverage input feasibility check time [ns] = "
       << ((double) totalInputCheckTime) / numTrajToGeneratePerSim / numSims
       << endl;
-  monteReadme
-      << "\tAverage state feasibility check time [ns] = "
+  monteReadme << "\tAverage state feasibility check time [ns] = "
       << ((double) totalStateCheckTime) / numTrajToGeneratePerSim / numSims
       << endl;
-  monteReadme
-      << "\tAverage state feasibility check time per obstacle [ns] = "
+  monteReadme << "\tAverage state feasibility check time per obstacle [ns] = "
       << ((double) totalStateCheckTime) / numTrajToGeneratePerSim / numTrees
-          / numSims
-      << endl;
+          / numSims << endl;
   monteReadme << "\tAverage time to find first feasible trajectory [ns] = "
-              << ((double) totalFirstFeasTrajTime) / numSims << endl;
+      << ((double) totalFirstFeasTrajTime) / numSims << endl;
   monteReadme << "\tLongest time to find feasible trajectory [ns] = "
-              << longestFirstFeasTrajTime << endl << endl;
+      << longestFirstFeasTrajTime << endl << endl;
   monteReadme << "\tAverage time to do everything per trajectory [ns] = "
-                << nsAllTrajTime / numSims / numTrajToGeneratePerSim << endl << endl;
+      << nsAllTrajTime / numSims / numTrajToGeneratePerSim << endl << endl;
 
-  monteReadme
-      << "\tPercent state feasible = "
+  monteReadme << "\tPercent state feasible = "
       << 100.0 * ((double) numStateFeasible)
-          / (numTrajToGeneratePerSim * numSims)
-      << endl << endl;
+          / (numTrajToGeneratePerSim * numSims) << endl << endl;
 
   monteReadme.close();
   cout << "Done." << endl;

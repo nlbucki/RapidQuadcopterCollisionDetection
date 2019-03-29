@@ -1,15 +1,14 @@
 #pragma once
-#include "Common/Math/Vec3.hpp"
-#include "TrajectoryGenerator.hpp"
-#include "TrajectoryGeneratorDrag.hpp"
-#include "ConvexObj.hpp"
-#include "Sphere.hpp"
-#include "SampleGenerator.hpp"
-#include "Trajectory.hpp"
-#include "CollisionChecker.hpp"
 #include <memory>
 #include <vector>
 #include <chrono>
+#include "CommonMath/Vec3.hpp"
+#include "CommonMath/ConvexObj.hpp"
+#include "CommonMath/Sphere.hpp"
+#include "CommonMath/Trajectory.hpp"
+#include "RapidCollisionDetection/CollisionChecker.hpp"
+#include "RapidQuadcopterTrajectories/TrajectoryGenerator.hpp"
+#include "RapidQuadcopterTrajectories/SampleGenerator.hpp"
 
 template<class Real>
 class StoppingTrajFinder {

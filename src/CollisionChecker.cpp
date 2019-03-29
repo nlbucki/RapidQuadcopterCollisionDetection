@@ -1,14 +1,12 @@
-#include "CollisionChecker.hpp"
+#include "RapidCollisionDetection/CollisionChecker.hpp"
 
-template<typename Real>
-typename CollisionChecker<Real>::CollisionResult CollisionChecker<Real>::CollisionCheck(
-    Boundary<Real> boundary) {
+typename CollisionChecker::CollisionResult CollisionChecker::CollisionCheck(
+    Boundary boundary) {
   //Ensure that the normal is a unit vector:
   boundary.normal = boundary.normal.GetUnitVector();
 
-  Real c[5] = { 0, 0, 0, 0, 0 };
-  std::vector < Vec3 < Real >> trajDerivativeCoeffs =
-      _traj.GetDerivativeCoeffs();
+  double c[5] = { 0, 0, 0, 0, 0 };
+  std::vector<Vec3> trajDerivativeCoeffs = _traj.GetDerivativeCoeffs();
   for (int dim = 0; dim < 3; dim++) {
     c[0] += boundary.normal[dim] * trajDerivativeCoeffs[0][dim];  //t**4
     c[1] += boundary.normal[dim] * trajDerivativeCoeffs[1][dim];  //t**3
@@ -18,12 +16,12 @@ typename CollisionChecker<Real>::CollisionResult CollisionChecker<Real>::Collisi
   }
 
   //Solve the roots (we prepend the times 0 and tf):
-  Real roots[6];
+  double roots[6];
   roots[0] = _traj.GetStartTime();
   roots[1] = _traj.GetEndTime();
 
   size_t rootCount;
-  if (tabs(c[0]) > Real(1e-6)) {
+  if (fabs(c[0]) > double(1e-6)) {
     rootCount = magnet::math::quarticSolve(c[1] / c[0], c[2] / c[0],
                                            c[3] / c[0], c[4] / c[0], roots[2],
                                            roots[3], roots[4], roots[5]);
@@ -47,9 +45,8 @@ typename CollisionChecker<Real>::CollisionResult CollisionChecker<Real>::Collisi
   return NoCollision;
 }
 
-template<typename Real>
-typename CollisionChecker<Real>::CollisionResult CollisionChecker<Real>::CollisionCheck(
-    std::shared_ptr<ConvexObj<Real>> obstacle, Real minTimeSection) {
+typename CollisionChecker::CollisionResult CollisionChecker::CollisionCheck(
+    std::shared_ptr<ConvexObj> obstacle, double minTimeSection) {
   // First check if the obstacle is in the bounding box of the trajectory
   if (obstacle->IsPointInside(_traj.GetValue(_traj.GetStartTime()))
       || obstacle->IsPointInside(_traj.GetValue(_traj.GetEndTime()))) {
@@ -60,12 +57,11 @@ typename CollisionChecker<Real>::CollisionResult CollisionChecker<Real>::Collisi
                                obstacle, minTimeSection);
 }
 
-template<typename Real>
-typename CollisionChecker<Real>::CollisionResult CollisionChecker<Real>::CollisionCheckSection(
-    Real ts, Real tf, std::shared_ptr<ConvexObj<Real>> obstacle,
-    Real minTimeSection) {
-  Real midTime = (ts + tf) / 2;
-  Vec3<Real> midpoint = _traj.GetValue(midTime);
+typename CollisionChecker::CollisionResult CollisionChecker::CollisionCheckSection(
+    double ts, double tf, std::shared_ptr<ConvexObj> obstacle,
+    double minTimeSection) {
+  double midTime = (ts + tf) / 2;
+  Vec3 midpoint = _traj.GetValue(midTime);
   if (obstacle->IsPointInside(midpoint)) {
     // The midpoint is inside the obstacle
     return Collision;
@@ -76,12 +72,11 @@ typename CollisionChecker<Real>::CollisionResult CollisionChecker<Real>::Collisi
   }
 
   // Get the tangent plane
-  Boundary<Real> tangentPlane = obstacle->GetTangentPlane(midpoint);
+  Boundary tangentPlane = obstacle->GetTangentPlane(midpoint);
 
   // Project trajectory into tangent plane
-  Real c[5] = { 0, 0, 0, 0, 0 };
-  std::vector < Vec3 < Real >> trajDerivativeCoeffs =
-      _traj.GetDerivativeCoeffs();
+  double c[5] = { 0, 0, 0, 0, 0 };
+  std::vector<Vec3> trajDerivativeCoeffs = _traj.GetDerivativeCoeffs();
   for (int dim = 0; dim < 3; dim++) {
     c[0] += tangentPlane.normal[dim] * trajDerivativeCoeffs[0][dim];  //t**4
     c[1] += tangentPlane.normal[dim] * trajDerivativeCoeffs[1][dim];  //t**3
@@ -91,9 +86,9 @@ typename CollisionChecker<Real>::CollisionResult CollisionChecker<Real>::Collisi
   }
 
   // Solve the roots
-  Real roots[4];
+  double roots[4];
   int rootCount;
-  if (tabs(c[0]) > Real(1e-6)) {
+  if (fabs(c[0]) > double(1e-6)) {
     rootCount = magnet::math::quarticSolve(c[1] / c[0], c[2] / c[0],
                                            c[3] / c[0], c[4] / c[0], roots[0],
                                            roots[1], roots[2], roots[3]);
@@ -106,8 +101,8 @@ typename CollisionChecker<Real>::CollisionResult CollisionChecker<Real>::Collisi
   // The first "rootCount" entries of roots are now the roots in ascending order
 
   // Get both lists of points to check in ascending order first
-  std::vector<Real> testPointsLow;
-  std::vector<Real> testPointsHigh;
+  std::vector<double> testPointsLow;
+  std::vector<double> testPointsHigh;
   testPointsLow.reserve(6);
   testPointsHigh.reserve(6);
   testPointsLow.push_back(ts);
@@ -132,7 +127,7 @@ typename CollisionChecker<Real>::CollisionResult CollisionChecker<Real>::Collisi
 
   // Check testPointsHigh first. We could also check testPointsLow first, but the intuition is that obstacles are more likely to be encountered at later times.
   // We iterate forward in time from midTime to t2
-  for (typename std::vector<Real>::iterator it = testPointsHigh.begin() + 1;
+  for (typename std::vector<double>::iterator it = testPointsHigh.begin() + 1;
       it != testPointsHigh.end(); it++) {
     if ((_traj.GetValue(*it) - tangentPlane.point).Dot(tangentPlane.normal)
         <= 0) {
@@ -147,8 +142,8 @@ typename CollisionChecker<Real>::CollisionResult CollisionChecker<Real>::Collisi
     }
   }
   // The upper segment of the trajectory is feasible, check the lower segment (starting from midTime iterating to t1)
-  for (typename std::vector<Real>::reverse_iterator it = testPointsLow.rbegin()
-      + 1; it != testPointsLow.rend(); it++) {
+  for (typename std::vector<double>::reverse_iterator it =
+      testPointsLow.rbegin() + 1; it != testPointsLow.rend(); it++) {
     if ((_traj.GetValue(*it) - tangentPlane.point).Dot(tangentPlane.normal)
         <= 0) {
       return CollisionCheckSection(ts, *(it - 1), obstacle, minTimeSection);
@@ -156,6 +151,3 @@ typename CollisionChecker<Real>::CollisionResult CollisionChecker<Real>::Collisi
   }
   return NoCollision;
 }
-
-template class CollisionChecker<float> ;
-template class CollisionChecker<double> ;

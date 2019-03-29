@@ -2,14 +2,13 @@
 // where each coefficient is a 3D vector
 
 #pragma once
-#include "Common/Math/Vec3.hpp"
-#include "RootFinder/quartic.hpp"
 #include <vector>
+#include "CommonMath/Vec3.hpp"
+#include "RootFinder/quartic.hpp"
 
-template<typename Real>
 class Trajectory {
  public:
-  Trajectory(std::vector<Vec3<Real>> coeffs, Real startTime, Real endTime)
+  Trajectory(std::vector<Vec3> coeffs, double startTime, double endTime)
       : _coeffs(coeffs),
         _startTime(startTime),
         _endTime(endTime) {
@@ -17,8 +16,8 @@ class Trajectory {
     assert(startTime <= endTime);
     boundingBox.initialized = false;
   }
-  Trajectory(Vec3<Real> c0, Vec3<Real> c1, Vec3<Real> c2, Vec3<Real> c3,
-             Vec3<Real> c4, Vec3<Real> c5, Real startTime, Real endTime)
+  Trajectory(Vec3 c0, Vec3 c1, Vec3 c2, Vec3 c3,
+             Vec3 c4, Vec3 c5, double startTime, double endTime)
       : _coeffs { c0, c1, c2, c3, c4, c5 },
         _startTime(startTime),
         _endTime(endTime) {
@@ -29,14 +28,14 @@ class Trajectory {
   // TODO: Initialize void (use quiet nans)
   // TODO: Initialize with Trajectory object
 
-  Vec3<Real> GetValue(Real t) const {
+  Vec3 GetValue(double t) const {
     assert(t >= _startTime);
     assert(t <= _endTime);
     return _coeffs[0] * t * t * t * t * t + _coeffs[1] * t * t * t * t
         + _coeffs[2] * t * t * t + _coeffs[3] * t * t + _coeffs[4] * t
         + _coeffs[5];
   }
-  Real GetAxisValue(int i, Real t) const {
+  double GetAxisValue(int i, double t) const {
     assert(t >= _startTime);
     assert(t <= _endTime);
     return _coeffs[0][i] * t * t * t * t * t + _coeffs[1][i] * t * t * t * t
@@ -44,36 +43,36 @@ class Trajectory {
         + _coeffs[5][i];
   }
 
-  std::vector<Vec3<Real>> GetCoeffs() {
+  std::vector<Vec3> GetCoeffs() {
     return _coeffs;
   }
-  Real GetStartTime() const {
+  double GetStartTime() const {
     return _startTime;
   }
-  Real GetEndTime() const {
+  double GetEndTime() const {
     return _endTime;
   }
-  Trajectory<Real> GetTimeShiftedTraj(Real shiftTime) {
-    Real T2 = shiftTime * shiftTime;
-    Real T3 = T2 * shiftTime;
-    Real T4 = T3 * shiftTime;
-    Real T5 = T4 * shiftTime;
-    Vec3<Real> c0 = _coeffs[0];
-    Vec3<Real> c1 = 5 * _coeffs[0] * shiftTime + _coeffs[1];
-    Vec3<Real> c2 = 10 * _coeffs[0] * T2 + 4 * _coeffs[1] * shiftTime
+  Trajectory GetTimeShiftedTraj(double shiftTime) {
+    double T2 = shiftTime * shiftTime;
+    double T3 = T2 * shiftTime;
+    double T4 = T3 * shiftTime;
+    double T5 = T4 * shiftTime;
+    Vec3 c0 = _coeffs[0];
+    Vec3 c1 = 5 * _coeffs[0] * shiftTime + _coeffs[1];
+    Vec3 c2 = 10 * _coeffs[0] * T2 + 4 * _coeffs[1] * shiftTime
         + _coeffs[2];
-    Vec3<Real> c3 = 10 * _coeffs[0] * T3 + 6 * _coeffs[1] * T2
+    Vec3 c3 = 10 * _coeffs[0] * T3 + 6 * _coeffs[1] * T2
         + 3 * _coeffs[2] * shiftTime + _coeffs[3];
-    Vec3<Real> c4 = 5 * _coeffs[0] * T4 + 4 * _coeffs[1] * T3
+    Vec3 c4 = 5 * _coeffs[0] * T4 + 4 * _coeffs[1] * T3
         + 3 * _coeffs[2] * T2 + 2 * _coeffs[3] * shiftTime + _coeffs[4];
-    Vec3<Real> c5 = _coeffs[0] * T5 + _coeffs[1] * T4 + _coeffs[2] * T3
+    Vec3 c5 = _coeffs[0] * T5 + _coeffs[1] * T4 + _coeffs[2] * T3
         + _coeffs[3] * T2 + _coeffs[4] * shiftTime + _coeffs[5];
-    return Trajectory<Real>(c0, c1, c2, c3, c4, c5, _startTime - shiftTime,
+    return Trajectory(c0, c1, c2, c3, c4, c5, _startTime - shiftTime,
                             _endTime - shiftTime);
   }
 
-  std::vector<Vec3<Real>> GetDerivativeCoeffs() const {
-    std::vector<Vec3<Real>> derivCoeffs;
+  std::vector<Vec3> GetDerivativeCoeffs() const {
+    std::vector<Vec3> derivCoeffs;
     derivCoeffs.reserve(5);
     for (int i = 0; i < 5; i++) {
       derivCoeffs.push_back((5 - i) * _coeffs[i]);
@@ -81,14 +80,14 @@ class Trajectory {
     return derivCoeffs;
   }
 
-  void GetBoundingBox(Vec3<Real> &outMinCorner, Vec3<Real> &outMaxCorner) {
+  void GetBoundingBox(Vec3 &outMinCorner, Vec3 &outMaxCorner) {
     if (!boundingBox.initialized) {
       //calculate the roots of the polynomial in each axis
-      Vec3<Real> startVal = GetValue(_startTime);
-      Vec3<Real> endVal = GetValue(_endTime);
+      Vec3 startVal = GetValue(_startTime);
+      Vec3 endVal = GetValue(_endTime);
       for (int dim = 0; dim < 3; dim++) {
         int rootCount;
-        Real roots[4];
+        double roots[4];
         if (_coeffs[0][dim]) {
           rootCount = magnet::math::quarticSolve(
               4 * _coeffs[1][dim] / (5 * _coeffs[0][dim]),
@@ -128,16 +127,16 @@ class Trajectory {
 
 // Returns the difference of two trajectories
 // The returned trajectory is only defined at times where this trajectory and rhs are defined
-  Trajectory<Real> operator-(const Trajectory<Real> rhs) {
-    Real startTime = std::max(_startTime, rhs.GetStartTime());
-    Real endTime = std::min(_endTime, rhs.GetEndTime());
-    return Trajectory<Real>(_coeffs[0] - rhs[0], _coeffs[1] - rhs[1],
+  Trajectory operator-(const Trajectory rhs) {
+    double startTime = std::max(_startTime, rhs.GetStartTime());
+    double endTime = std::min(_endTime, rhs.GetEndTime());
+    return Trajectory(_coeffs[0] - rhs[0], _coeffs[1] - rhs[1],
                             _coeffs[2] - rhs[2], _coeffs[3] - rhs[3],
                             _coeffs[4] - rhs[4], _coeffs[5] - rhs[5], startTime,
                             endTime);
   }
 
-  inline Vec3<Real> operator[](int i) const {
+  inline Vec3 operator[](int i) const {
     switch (i) {
       case 0:
         return _coeffs[0];
@@ -154,7 +153,7 @@ class Trajectory {
       default:
         // We should never get here (index out of bounds)
         assert(false);
-        return Vec3<Real>();  // Returns vector of NaNs
+        return Vec3();  // Returns vector of NaNs
     }
   }
 
@@ -172,10 +171,10 @@ class Trajectory {
 // TODO: Add dot product with direction function
 
  private:
-  std::vector<Vec3<Real>> _coeffs;
-  Real _startTime, _endTime;
+  std::vector<Vec3> _coeffs;
+  double _startTime, _endTime;
   struct {
-    Vec3<Real> minCorner, maxCorner;
+    Vec3 minCorner, maxCorner;
     bool initialized;
   } boundingBox;
 };

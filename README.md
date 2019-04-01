@@ -10,7 +10,7 @@ The existing multicopter trajectory generation method used in this project is de
 
 ## Getting Started
 
-First clone the repository and entery the created folder:
+First clone the repository and enter the created folder:
 ```
 git clone https://github.com/nlbucki/RapidQuadcopterCollisionDetection.git
 cd RapidQuadcopterCollisionDetection

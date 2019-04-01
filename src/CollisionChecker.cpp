@@ -27,6 +27,8 @@ typename CollisionChecker::CollisionResult CollisionChecker::CollisionCheck(
   //Ensure that the normal is a unit vector:
   boundary.normal = boundary.normal.GetUnitVector();
 
+  // Take the dot product of the trajectory with the unit normal
+  // This gives the distance of the trajectory from the plane as a function of time
   double c[5] = { 0, 0, 0, 0, 0 };
   std::vector<Vec3> trajDerivativeCoeffs = _traj.GetDerivativeCoeffs();
   for (int dim = 0; dim < 3; dim++) {
@@ -69,7 +71,7 @@ typename CollisionChecker::CollisionResult CollisionChecker::CollisionCheck(
 
 typename CollisionChecker::CollisionResult CollisionChecker::CollisionCheck(
     std::shared_ptr<CommonMath::ConvexObj> obstacle, double minTimeSection) {
-  // First check if the obstacle is in the bounding box of the trajectory
+  // First check if the start or end point of the trajectory is inside the obstacle
   if (obstacle->IsPointInside(_traj.GetValue(_traj.GetStartTime()))
       || obstacle->IsPointInside(_traj.GetValue(_traj.GetEndTime()))) {
     // If the starting or ending point is inside the obstacle, we're infeasible
@@ -82,21 +84,24 @@ typename CollisionChecker::CollisionResult CollisionChecker::CollisionCheck(
 typename CollisionChecker::CollisionResult CollisionChecker::CollisionCheckSection(
     double ts, double tf, std::shared_ptr<CommonMath::ConvexObj> obstacle,
     double minTimeSection) {
+
+  // First find the position halfway between the start and end time of this segment
   double midTime = (ts + tf) / 2;
   Vec3 midpoint = _traj.GetValue(midTime);
   if (obstacle->IsPointInside(midpoint)) {
-    // The midpoint is inside the obstacle
+    // The midpoint is inside the obstacle, so we're infeasible
     return Collision;
   }
   if (tf - ts < minTimeSection) {
-    // Our stepsize is too small, just give up (trajectory is likely tangent to obstacle surface)
+    // Our time resolution is too small, just give up (trajectory is likely tangent to obstacle surface)
     return CollisionIndeterminable;
   }
 
-  // Get the tangent plane
+  // Get the plane separating the midpoint and the obstacle
   CommonMath::Boundary tangentPlane = obstacle->GetTangentPlane(midpoint);
 
-  // Project trajectory into tangent plane
+  // Take the dot product of the trajectory with the unit normal of the separating plane.
+  // This gives the distance of the trajectory from the plane as a function of time
   double c[5] = { 0, 0, 0, 0, 0 };
   std::vector<Vec3> trajDerivativeCoeffs = _traj.GetDerivativeCoeffs();
   for (int dim = 0; dim < 3; dim++) {
@@ -122,52 +127,69 @@ typename CollisionChecker::CollisionResult CollisionChecker::CollisionCheckSecti
   std::sort(roots, roots + rootCount);
   // The first "rootCount" entries of roots are now the roots in ascending order
 
-  // Get both lists of points to check in ascending order first
+  // Get both lists of points to check (in ascending order)
   std::vector<double> testPointsLow;
   std::vector<double> testPointsHigh;
   testPointsLow.reserve(6);
   testPointsHigh.reserve(6);
-  testPointsLow.push_back(ts);
-  testPointsHigh.push_back(midTime);
+  testPointsLow.push_back(ts);  // ts is always the first critical point in testPointsLow
+  testPointsHigh.push_back(midTime);  // midTime is always the first critical point in testPointsHigh
   for (int i = 0; i < rootCount; i++) {
     if (roots[i] <= ts) {
-      // Skip root if it's before t1
+      // Skip root if it's before ts
       continue;
     } else if (roots[i] < midTime) {
-      // Root is between t1 and midTime
+      // Root is between ts and midTime
       testPointsLow.push_back(roots[i]);
     } else if (roots[i] < tf) {
-      // Root is between midTime and t2
+      // Root is between midTime and tf
       testPointsHigh.push_back(roots[i]);
     } else {
-      // We're done because the roots are in ascending order
+      // Because the roots are in ascending order, there are no more roots are on (ts,tf)
       break;
     }
   }
-  testPointsLow.push_back(midTime);
-  testPointsHigh.push_back(tf);
+  testPointsLow.push_back(midTime);  // midTime is always the last critical point in testPointsLow
+  testPointsHigh.push_back(tf);  // tf is always the last critical point in testPointsHigh
 
-  // Check testPointsHigh first. We could also check testPointsLow first, but the intuition is that obstacles are more likely to be encountered at later times.
-  // We iterate forward in time from midTime to t2
+  // Check testPointsHigh first. We could also check testPointsLow first, but the intuition is
+  // that obstacles are more likely to be encountered at later times.
+  // We iterate forward in time from midTime to tf.
   for (typename std::vector<double>::iterator it = testPointsHigh.begin() + 1;
       it != testPointsHigh.end(); it++) {
+    // Check whether the critical point occurs on the obstacle side of the plane
     if ((_traj.GetValue(*it) - tangentPlane.point).Dot(tangentPlane.normal)
         <= 0) {
-      // The time is in the potentially infeasible region
+      // This critical point is on the obstacle side of the plane, so we must
+      // keep searching over the rest of the trajectory starting at the
+      // previous critical point and ending at tf.
       CollisionResult resHigh = CollisionCheckSection(*(it - 1), tf, obstacle,
                                                       minTimeSection);
       if (resHigh == NoCollision) {
+        // The section from the previous critical point until tf was feasible, meaning that all of the
+        // trajectory from midTime to tf does not collide with the obstacle
         break;
       } else {
+        // Either a collision was detected between the previous critical point and tf, or the recursion
+        // became too deep (i.e. the time resolution too small) and the collision was indeterminable.
         return resHigh;
       }
     }
   }
-  // The upper segment of the trajectory is feasible, check the lower segment (starting from midTime iterating to t1)
+  // The segment of the trajectory from midTime to tf is feasible, check the segment of the trajectory
+  // from midTime to ts (starting from midTime iterating to ts).
   for (typename std::vector<double>::reverse_iterator it =
       testPointsLow.rbegin() + 1; it != testPointsLow.rend(); it++) {
+    // Check whether the critical point occurs on the obstacle side of the plane
     if ((_traj.GetValue(*it) - tangentPlane.point).Dot(tangentPlane.normal)
         <= 0) {
+      // This critical point is on the obstacle side of the plane, so we must
+      // keep searching over the rest of the trajectory starting at the
+      // previous critical point and ending at ts (recall we are searching
+      // backwards in time). Also, because we have already verified that the
+      // trajectory is collision free between midTime and tf, we can simply
+      // return the result of the collision check on the segment from ts to
+      // the previous critical point.
       return CollisionCheckSection(ts, *(it - 1), obstacle, minTimeSection);
     }
   }

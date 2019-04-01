@@ -19,8 +19,8 @@ def getRectPrismPolygons(Z):
 
 
 # read the data:
-fname = '../data/ForestPerfEval.csv'
-fname2 = '../data/ForestPerfEvaltreeParamsCSV.csv'
+fname = './data/ForestPerfEval.csv'
+fname2 = './data/ForestPerfEvaltreeParamsCSV.csv'
 trajData = np.genfromtxt(fname, delimiter=',')
 treeData = np.genfromtxt(fname2, delimiter=',')
 

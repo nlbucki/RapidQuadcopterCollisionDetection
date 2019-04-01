@@ -5,7 +5,7 @@ project(RapidCollisionDetection CXX)
 set(CMAKE_CXX_STANDARD 11)
 
 # Enable all warnings, treat warnings as errors, compile with highest optimizaiton
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -Wextra -Wpedantic -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})

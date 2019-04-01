@@ -1,6 +1,6 @@
-/*  dynamo:- Event driven molecular dynamics simulator
-    http://www.dynamomd.org
-    Copyright (C) 2011  Marcus N Campbell Bannerman <m.bannerman@gmail.com>
+/*  DYNAMO:- Event driven molecular dynamics simulator
+    http://www.marcusbannerman.co.uk/dynamo
+    Copyright (C) 2010  Marcus N Campbell Bannerman <m.bannerman@gmail.com>
     This program is free software: you can redistribute it and/or
     modify it under the terms of the GNU General Public License
     version 3 as published by the Free Software Foundation.
@@ -12,17 +12,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/* Slightly modified the original files from https://www.marcusbannerman.co.uk/index.php/downloads.html?func=finishdown&id=20
+ Mark W. Mueller (mwm@mwm.im)
+Changes:
+  - some readibility tweaks (also removes an eclipse warning about braces).
+*/
+
 #pragma once
 
 #include "cubic.hpp"
-
-/*
-   This work is heavily derived from the public domain work of Don
-   Herbison-Evans. The original code is available in
-   src/magnet/test/quartic_original.cpp. The code has been refactored
-   to change its coding style. Any changes to the function are listed
-   below.
-*/
 
 namespace magnet {
   namespace math {
@@ -46,8 +44,7 @@ namespace magnet {
       double ainv2;
       double d4;
       double yinv2;
-      double v1[4] = {0,0,0,0},
-  v2[4] = {0,0,0,0},v3[4]={0,0,0,0};
+      double v1[4],v2[4],v3[4];
       double p,q,r;
       double y;
       double e,f,esq,fsq,ef;
@@ -124,11 +121,11 @@ namespace magnet {
        || ((b < 0.0)&&(y < 0.0)) )
     {
       if (((a > 0.0) && (e > 0.0))
-          || ((a < 0.0) && (e < 0.0)) )
+          || ((a < 0.0) && (e < 0.0) ))
         g = (b + y)/gg;
       else
         if (((a > 0.0) && (e < 0.0))
-      || ((a < 0.0) && (e > 0.0)))
+      || ((a < 0.0) && (e > 0.0) ))
           gg = (b + y)/g;
     }
         hh = -yinv2 + f;
@@ -141,8 +138,8 @@ namespace magnet {
          || ((f > 0.0)&&(y > 0.0)) )
       hh = d/h;
 
-        bool n1 = quadraticSolve(hh,gg,1.0,v1[0],v1[1]);
-        bool n2 = quadraticSolve(h,g,1.0,v2[0],v2[1]);
+        bool n1 = quadSolve(hh,gg,1.0,v1[0],v1[1]);
+        bool n2 = quadSolve(h,g,1.0,v2[0],v2[1]);
         n4[j3] = n1*2+n2*2;
         qrts[0][j3] = v1[0];
         qrts[1][j3] = v1[1];

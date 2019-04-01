@@ -1,6 +1,6 @@
-/*  dynamo:- Event driven molecular dynamics simulator
-    http://www.dynamomd.org
-    Copyright (C) 2011  Marcus N Campbell Bannerman <m.bannerman@gmail.com>
+/*  DYNAMO:- Event driven molecular dynamics simulator
+    http://www.marcusbannerman.co.uk/dynamo
+    Copyright (C) 2010  Marcus N Campbell Bannerman <m.bannerman@gmail.com>
     This program is free software: you can redistribute it and/or
     modify it under the terms of the GNU General Public License
     version 3 as published by the Free Software Foundation.
@@ -16,14 +16,6 @@
 
 #include "cubic.hpp"
 
-/*
-   This work is heavily derived from the public domain work of Don
-   Herbison-Evans. The original code is available in
-   src/magnet/test/quartic_original.cpp. The code has been refactored
-   to change its coding style. Any changes to the function are listed
-   below.
-*/
-
 namespace magnet {
   namespace math {
     //solve the quartic equation -
@@ -36,8 +28,7 @@ namespace magnet {
       double worst3[3];
       double y,g,gg,h,hh,gdis,gdisrt,hdis,hdisrt,g1,g2,h1,h2;
       double bmy,gerr,herr,y4,bmysq;
-      double v1[4] = {0,0,0,0},
-  v2[4] = {0,0,0,0},v3[4]={0,0,0,0};
+      double v1[4],v2[4],v3[4];
       double hmax,gmax;
       double qrts[4][3];        /* quartic roots for each cubic root */
 
@@ -151,8 +142,8 @@ namespace magnet {
         if (gg <  -gmax)
     gg = -gmax;
 
-        size_t n1 = quadraticSolve(hh,gg, 1.0,v1[0],v1[1]);
-        size_t n2 = quadraticSolve(h,g,1.0,v2[0],v2[1]);
+        size_t n1 = quadSolve(hh,gg, 1.0,v1[0],v1[1]);
+        size_t n2 = quadSolve(h,g,1.0,v2[0],v2[1]);
         nQuarticRoots[j3] = 2*n1 + 2*n2;
         qrts[0][j3] = v1[0];
         qrts[1][j3] = v1[1];

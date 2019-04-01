@@ -35,7 +35,7 @@ python ./scripts/plotSingleForestBatch.py
 ```
 
 ## Documentation
-An HTML file generated with [Doxygen](http://www.doxygen.nl/) called `Documentation.html` is provided in the /doc folder.
+An HTML file generated with [Doxygen](http://www.doxygen.nl/) can be accesed after cloning the repository by opening `Documentation.html` in the `doc/` folder.
 
 ## Licensing
 

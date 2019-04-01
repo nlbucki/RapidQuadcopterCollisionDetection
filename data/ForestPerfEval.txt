@@ -1,0 +1,29 @@
+Meta-parameters:
+numTrees = 5
+numSims = 10000
+numTrajToGeneratePerSim = 100
+fmin = 5
+fmax = 30
+wmax = 20
+minTimeSec = 0.002
+posRange = 2.5
+velRangeYZ = 2
+velRangeXmin = 2
+velRangeXmax = 8
+accRangeYZ = 2
+accRangeXmin = 4
+accRangeXmax = 10
+timeRangeMin = 0.5
+timeRangeMax = 2
+treeSideLen = 0.5
+treeHeight = 5
+
+Results:
+Average time spent generating the trajectory [ns] = 61.4238
+Average time spent checking for input feasibility [ns] = 531.409
+Average time spent checking for collisions [ns] = 7777.35
+Average time spent checking for collisions per obstacle [ns] = 1555.47
+Average time to find first collision-free trajectory [ns] = 14946.7
+Average time to do everything per trajectory [ns] = 8480.45
+Percent of trajectories that were input feasible = 63.8882
+Percent of trajectories that were collision free = 60.2937

@@ -1,6 +1,6 @@
-/*  dynamo:- Event driven molecular dynamics simulator
-    http://www.dynamomd.org
-    Copyright (C) 2011  Marcus N Campbell Bannerman <m.bannerman@gmail.com>
+/*  DYNAMO:- Event driven molecular dynamics simulator
+    http://www.marcusbannerman.co.uk/dynamo
+    Copyright (C) 2010  Marcus N Campbell Bannerman <m.bannerman@gmail.com>
     This program is free software: you can redistribute it and/or
     modify it under the terms of the GNU General Public License
     version 3 as published by the Free Software Foundation.
@@ -18,13 +18,6 @@
 #include "quartic_descartes.hpp"
 #include "quartic_neumark.hpp"
 #include "quartic_ferrari.hpp"
-
-/* This work is heavily derived from the public domain work of Don
-   Herbison-Evans. The original code is available in
-   src/magnet/test/quartic_original.cpp. The code has been refactored
-   to change its coding style. Any changes to the function are listed
-   below.
-*/
 
 namespace magnet {
   namespace math {
@@ -62,7 +55,7 @@ namespace magnet {
       if ((a == 0) && (c== 0))
   {//We have a biquadratic
     double quadRoot1,quadRoot2;
-    if (quadraticSolve(d,b,1, quadRoot1, quadRoot2))
+    if (quadSolve(d,b,1, quadRoot1, quadRoot2))
       {
         if (quadRoot1 < quadRoot2) std::swap(quadRoot1,quadRoot2);
 

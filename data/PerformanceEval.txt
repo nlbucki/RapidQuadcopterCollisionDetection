@@ -1,0 +1,25 @@
+Meta-parameters:
+numTrajToGenerate = 1000000
+fmin = 5
+fmax = 30
+wmax = 20
+minTimeSec = 0.002
+posRange = 4
+velRange = 4
+accRange = 4
+timeRangeMin = 0.2
+timeRangeMax = 4
+radiusMin = 0.1
+radiusMax = 1.5
+
+Results:
+Average time spent defining/initializing things [ns] = 234.902
+Average time spent generating the trajectory [ns] = 56.8703
+Average time spent checking for input feasibility [ns] = 483.353
+Average time spent checking for collisions [ns] = 1337.63
+Average time spent checking for collisions when no collision occurs [ns] = 1340.39
+Average time spent checking for collisions when a collision occurs [ns] = 1271.7
+Average time spent checking for collisions when a collision cannot be determined [ns] = 11736
+Percent of trajectories that were collision-free  = 95.9692
+Percent of trajectories with collision  = 4.0307
+Percent of trajectories with collision indeterminable  = 0.0001

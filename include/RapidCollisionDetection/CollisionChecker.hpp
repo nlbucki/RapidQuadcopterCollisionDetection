@@ -50,12 +50,17 @@ class CollisionChecker {
 
   //! Checks for a collision between the trajectory and a given convex object.
   /*!
-   * @param boundary A Boundary struct representing the half-plane
-   * @return Either NoCollision or Collision depending on if the Trajectory crosses the plane
+   * @param obstacle A Boundary struct representing the half-plane.
+   * @param minTimeSection The minimum time resolution at which the candidate trajectory.
+   * should be checked for collisions [s]. If the candidate trajectory is split into a segment
+   * shorter than minTimeSection, CollisionIndeterminable is returned.
+   * @return Either NoCollision, Collision, or CollisionIndeterminable depending on whether the
+   * Trajectory does not collide with the obstacle, does collide, or whether a collision cannot be determined.
    */
   CollisionResult CollisionCheck(
       std::shared_ptr<CommonMath::ConvexObj> obstacle, double minTimeSection);
 
+  //! Returns a string with the name of the CollisionResult for printing to the console
   static const char* GetCollisionResultName(CollisionResult fr) {
     switch (fr) {
       case CollisionResult::NoCollision:
@@ -63,7 +68,7 @@ class CollisionChecker {
       case CollisionResult::Collision:
         return "Collision";
       case CollisionResult::CollisionIndeterminable:
-        return "CollisionIndeterminable";
+        return "Collision Indeterminable";
     }
     return "Unknown!";
   }

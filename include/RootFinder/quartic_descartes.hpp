@@ -1,6 +1,6 @@
-/*  dynamo:- Event driven molecular dynamics simulator
-    http://www.dynamomd.org
-    Copyright (C) 2011  Marcus N Campbell Bannerman <m.bannerman@gmail.com>
+/*  DYNAMO:- Event driven molecular dynamics simulator
+    http://www.marcusbannerman.co.uk/dynamo
+    Copyright (C) 2010  Marcus N Campbell Bannerman <m.bannerman@gmail.com>
     This program is free software: you can redistribute it and/or
     modify it under the terms of the GNU General Public License
     version 3 as published by the Free Software Foundation.
@@ -15,14 +15,6 @@
 #pragma once
 
 #include "cubic.hpp"
-
-/*
-   This work is heavily derived from the public domain work of Don
-   Herbison-Evans. The original code is available in
-   src/magnet/test/quartic_original.cpp. The code has been refactored
-   to change its coding style. Any changes to the function are listed
-   below.
-*/
 
 namespace magnet {
   namespace math {
@@ -41,8 +33,7 @@ namespace magnet {
   }
 
       int j, n4[4];
-      double v1[4] = {0,0,0,0},
-  v2[4] = {0,0,0,0},v3[4]={0,0,0,0};
+      double v1[4],v2[4],v3[4];
       double k,y;
       double p,q,r;
       double e0,e1,e2;
@@ -73,8 +64,8 @@ namespace magnet {
         e1invk = e1/k;
         g = (y + e2 + e1invk)*0.5;
         h = (y + e2 - e1invk)*0.5 ;
-        bool n1 = quadraticSolve( g, -k, 1.0, v1[0], v1[1]);
-        bool n2 = quadraticSolve( h, k, 1.0, v2[0], v2[1]);
+        bool n1 = quadSolve( g, -k, 1.0, v1[0], v1[1]);
+        bool n2 = quadSolve( h, k, 1.0, v2[0], v2[1]);
         qrts[0][j3] = v1[0] - ainv4;
         qrts[1][j3] = v1[1] - ainv4;
         qrts[n1*2][j3] = v2[0] - ainv4;

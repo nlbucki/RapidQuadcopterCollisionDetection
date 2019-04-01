@@ -1,17 +1,20 @@
-/* mwm 
+/*!
+ * Rapid Collision Detection for Multicopter Trajectories
  *
- * A way of representing attitudes, based on the Euler-Rodriguez symmetric parameters (ERSP)
- * a.k.a. "quaternion of rotation". Note that Quaternions as such are stupid and used
- * only by 18th century mathematicians who hadn't yet invented vector maths.
- * If you need to invoke hypercomplex numbers to do classical mechanics, you're doing
- * something wrong.
+ * Copyright 2019 by High Performance Robotics Lab, UC Berkeley
  *
- * Note that you should call Normalise() every once in a while, so that you're rotations remain
- * orthonormal.
+ * This code is free software: you can redistribute
+ * it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either
+ * version 3 of the License, or (at your option) any later version.
  *
- * BEWARE: Everyone defines rotations differently, take care when interpreting the internals, or
- * using it. Construct some test cases and make sure the numbers make sense.
+ * This code is distributed in the hope that it will
+ * be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
+ * You should have received a copy of the GNU General Public License
+ * along with the code.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #pragma once
@@ -20,7 +23,15 @@
 #include <limits>
 #include "CommonMath/Vec3.hpp"
 
-//Real can be float or double (float for onboard, else double).
+namespace CommonMath {
+
+//! A way of representing attitudes, based on the Euler-Rodriguez symmetric parameters (ERSP) a.k.a. "quaternion of rotation".
+/*!Note that you should call Normalise() every once in a while, so that you're rotations remain
+ * orthonormal.
+ *
+ * BEWARE: Everyone defines rotations differently, take care when interpreting the internals, or
+ * using it. Construct some test cases and make sure the numbers make sense.
+ */
 class Rotation {
   double static constexpr half = double(0.5);
   double static constexpr MIN_ANGLE = double(4.84813681e-6);  //less than one arc second.
@@ -29,7 +40,7 @@ class Rotation {
   Rotation(void) {
   }
 
-  //Note: this assumes you're giving it a unit quaternion. Call Normalise() if not.
+  //! Constructor given a unit quaternion.
   Rotation(double a, double b, double c, double d) {
     _v[0] = a;
     _v[1] = b;
@@ -37,7 +48,7 @@ class Rotation {
     _v[3] = d;
   }
 
-  //Copy constructor from Rotationd (for Rotationf)
+  //! Copy constructor.
   Rotation(Rotation const &in) {
     _v[0] = double(in[0]);
     _v[1] = double(in[1]);
@@ -53,7 +64,7 @@ class Rotation {
     return Rotation(_v[0], -_v[1], -_v[2], -_v[3]);
   }
 
-  //This makes sure we have norm one
+  //! This makes sure the quaternion is a unit quaternion.
   void Normalise(void) {
     double n = sqrt(
         _v[0] * _v[0] + _v[1] * _v[1] + _v[2] * _v[2] + _v[3] * _v[3]);
@@ -65,6 +76,9 @@ class Rotation {
     }
   }
 
+  /*! Returns a Rotation object given a vector, where the direction of the vector
+   * is the rotation axis and the magnitude of the vector is the angle of rotation in radians.
+   */
   static Rotation FromRotationVector(const Vec3 rotVec) {
     const double theta = rotVec.GetNorm2();
     if (theta < MIN_ANGLE)
@@ -72,7 +86,9 @@ class Rotation {
     return FromAxisAngle(rotVec / theta, theta);
   }
 
-  //You must pass a unit vector, no check is made here!
+  /*! Returns a Rotation object given a unit vector and angle. The unit vector
+   * is the rotation axis and the angle is the angle of rotation in radians.
+   */
   static inline Rotation FromAxisAngle(const Vec3 &unitVector,
                                        const double &angle) {
     return Rotation(cos(angle * half), sin(angle * half) * unitVector.x,
@@ -80,7 +96,9 @@ class Rotation {
                     sin(angle * half) * unitVector.z);
   }
 
-  static Rotation FromEulerYPR(const double& y, const double& p, const double& r) {  //NB! rotation: 3-2-1 yaw,pitch,roll
+  //! Returns a Rotation object given Euler angles yaw, pitch, and roll.
+  static Rotation FromEulerYPR(const double& y, const double& p,
+                               const double& r) {  //NB! rotation: 3-2-1 yaw,pitch,roll
     Rotation rot;
     rot[0] = cos(half * y) * cos(half * p) * cos(half * r)
         + sin(half * y) * sin(half * p) * sin(half * r);
@@ -93,6 +111,7 @@ class Rotation {
     return rot;
   }
 
+  //! Returns a Rotation object given the three elements of the vector part of a unit quaternion.
   static Rotation FromVectorPartOfQuaternion(const Vec3 in) {
     double tmp = in.GetNorm2Squared();
     if (tmp > 1.0f)
@@ -101,7 +120,7 @@ class Rotation {
     return Rotation(a0, in.x, in.y, in.z);
   }
 
-  // rotation multiplication: r2*r1, corresponds to a rotation r1 followed by rotation r2
+  //! Rotation multiplication: r2*r1, corresponds to a rotation r1 followed by rotation r2
   Rotation operator*(const Rotation& r1) const {
     double c0 = r1[0] * _v[0] - r1[1] * _v[1] - r1[2] * _v[2] - r1[3] * _v[3];
     double c1 = r1[1] * _v[0] + r1[0] * _v[1] + r1[3] * _v[2] - r1[2] * _v[3];
@@ -111,17 +130,15 @@ class Rotation {
     return Rotation(c0, c1, c2, c3);
   }
 
-  // rotate a vector forward
+  //! Rotate a vector forward
   Vec3 operator*(const Vec3& vec) const {
     return Rotate(vec);
   }
 
-  double GetAngle(void) const {
-//    return tatan2(Vec3(_v[1], _v[2], _v[3]).GetNorm2(), _v[0]) * double(2.0);
-    double a = acos(fabs(_v[0])) * double(2.0);
-    return a;
-  }
-
+  /*! Returns the rotation vector corresponding to this rotation, where
+   * the returned vector is the rotation axis and its magnitude is the
+   * rotation angle.
+   */
   Vec3 ToRotationVector(void) const {
     const Vec3 n = ToVectorPartOfQuaternion();
     const double norm = n.GetNorm2();
@@ -133,6 +150,7 @@ class Rotation {
     return n * (angle / norm);
   }
 
+  //! Returns the vector part of the quaternion representing this rotation
   Vec3 ToVectorPartOfQuaternion(void) const {
     //makes first component positive
     if (_v[0] > 0)
@@ -141,21 +159,23 @@ class Rotation {
       return Vec3(-_v[1], -_v[2], -_v[3]);
   }
 
+  //! Returns the Euler angles yaw, pitch, and roll representing this rotation
   void ToEulerYPR(double &y, double &p, double &r) const {
     y = atan2(double(2.0) * _v[1] * _v[2] + double(2.0) * _v[0] * _v[3],
-               _v[1] * _v[1] + _v[0] * _v[0] - _v[3] * _v[3] - _v[2] * _v[2]);
+              _v[1] * _v[1] + _v[0] * _v[0] - _v[3] * _v[3] - _v[2] * _v[2]);
     p = -asin(double(2.0) * _v[1] * _v[3] - double(2.0) * _v[0] * _v[2]);
     r = atan2(double(2.0) * _v[2] * _v[3] + double(2.0) * _v[0] * _v[1],
-               _v[3] * _v[3] - _v[2] * _v[2] - _v[1] * _v[1] + _v[0] * _v[0]);
+              _v[3] * _v[3] - _v[2] * _v[2] - _v[1] * _v[1] + _v[0] * _v[0]);
   }
 
+  //! Returns the Euler angles yaw, pitch, and roll representing this rotation
   Vec3 ToEulerYPR(void) const {
     Vec3 out;
     ToEulerYPR(out.x, out.y, out.z);
     return out;
   }
 
-  //for debugging
+  //! For debugging
   void PrintRotationMatrix(void) {
     double R[9];
     GetRotationMatrix(R);
@@ -174,18 +194,17 @@ class Rotation {
     return _v[i];
   }
 
+  /*! Returns the rotation matrix corresponding to this rotation where
+   * Matrix =
+   *    [[R[0], R[1], R[2]],
+   *     [R[3], R[4], R[5]],
+   *     [R[6], R[7], R[8]]]
+   */
   void GetRotationMatrix(double R[9]) const {
     const double r0 = _v[0] * _v[0];
     const double r1 = _v[1] * _v[1];
     const double r2 = _v[2] * _v[2];
     const double r3 = _v[3] * _v[3];
-
-    /*
-     * Matrix =
-     *    [[R[0], R[1], R[2]],
-     *     [R[3], R[4], R[5]],
-     *     [R[6], R[7], R[8]]]
-     */
 
     R[0] = r0 + r1 - r2 - r3;
     R[1] = 2 * _v[1] * _v[2] - 2 * _v[0] * _v[3];
@@ -207,8 +226,8 @@ class Rotation {
     GetRotationMatrix(R);
 
     Vec3 ret(R[0] * in.x + R[1] * in.y + R[2] * in.z,
-                   R[3] * in.x + R[4] * in.y + R[5] * in.z,
-                   R[6] * in.x + R[7] * in.y + R[8] * in.z);
+             R[3] * in.x + R[4] * in.y + R[5] * in.z,
+             R[6] * in.x + R[7] * in.y + R[8] * in.z);
 
     return ret;
   }
@@ -218,11 +237,12 @@ class Rotation {
     Inverse().GetRotationMatrix(R);
 
     Vec3 ret(R[0] * in.x + R[1] * in.y + R[2] * in.z,
-                   R[3] * in.x + R[4] * in.y + R[5] * in.z,
-                   R[6] * in.x + R[7] * in.y + R[8] * in.z);
+             R[3] * in.x + R[4] * in.y + R[5] * in.z,
+             R[6] * in.x + R[7] * in.y + R[8] * in.z);
 
     return ret;
   }
 
   double _v[4];
 };
+}

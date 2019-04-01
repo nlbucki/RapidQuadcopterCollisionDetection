@@ -23,7 +23,7 @@ cmake ..
 make
 ```
 
-Two programs are provided that both demonstrate the performance of the algorithm and give an example of how the algorithm can be used to generate collision free motion primitives. The programs `PerformanceEval` and `ForestPerformanceEval` perform the Monte Carlo simulation with random and constant obstacles respectively as described in Section IV of the associated paper. Both programs can be ran from the parent directory with the following commands:
+Two programs are provided that both demonstrate the performance of the algorithm and give an example of how the algorithm can be used to generate collision free motion primitives. The programs `PerformanceEval` and `ForestPerformanceEval` perform the Monte Carlo simulation with random and constant obstacles respectively as described in Section IV of the associated paper. Both programs can be ran from the parent directory (after compiling the code) with the following commands:
 ```
 ./build/test/PerformanceEval
 ./build/test/ForestPerformanceEval
@@ -33,6 +33,9 @@ Both programs should output the average collision detection time required for tr
 ```
 python ./scripts/plotSingleForestBatch.py
 ```
+
+## Documentation
+An HTML file generated with [Doxygen](http://www.doxygen.nl/) called `Documentation.html` is provided in the /doc folder.
 
 ## Licensing
 

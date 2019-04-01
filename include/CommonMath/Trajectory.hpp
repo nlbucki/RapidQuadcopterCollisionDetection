@@ -1,33 +1,78 @@
-// Represents a quintic polynomial in 3D of the form c[0]*t^5 + c[1]*t^4 + c[2]*t^3 + c[3]*t^2 + c[4]*t + c[5]
-// where each coefficient is a 3D vector
+/*!
+ * Rapid Collision Detection for Multicopter Trajectories
+ *
+ * Copyright 2019 by Nathan Bucki <nathan_bucki@berkeley.edu>
+ *
+ * This code is free software: you can redistribute
+ * it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This code is distributed in the hope that it will
+ * be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with the code.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #pragma once
 #include <vector>
 #include "CommonMath/Vec3.hpp"
-#include "RootFinder/quartic.hpp"
 
+namespace CommonMath {
+
+//! Represents a qunitic polynomial in 3D.
+/*!
+ *  The polynomial is a function of time and is of the form
+ *  c[0]*t^5 + c[1]*t^4 + c[2]*t^3 + c[3]*t^2 + c[4]*t + c[5]
+ *  where each coefficient is a vector with three dimensions.
+ *  The polynomial is only defined between given start and end times.
+ */
 class Trajectory {
  public:
+
+  //! Constructor.
+  /*!
+   * @param coeffs The six 3D coefficients defining the polynomial.
+   * The coefficients are ordered such that coeffs[0] corresponds to t^5,
+   * coeffs[1] to t^4 and so forth.
+   * @param startTime The earliest time at which the polynomial is defined
+   * @param endTime The latest time at which the polynomial is defined
+   */
   Trajectory(std::vector<Vec3> coeffs, double startTime, double endTime)
       : _coeffs(coeffs),
         _startTime(startTime),
         _endTime(endTime) {
     assert(coeffs.size() == 6);
     assert(startTime <= endTime);
-    boundingBox.initialized = false;
   }
-  Trajectory(Vec3 c0, Vec3 c1, Vec3 c2, Vec3 c3,
-             Vec3 c4, Vec3 c5, double startTime, double endTime)
+
+  //! Constructor.
+  /*!
+   * @param c0 Coefficients for t^5
+   * @param c1 Coefficients for t^4
+   * @param c2 Coefficients for t^3
+   * @param c3 Coefficients for t^2
+   * @param c4 Coefficients for t
+   * @param c5 Constant terms
+   * @param startTime The earliest time at which the polynomial is defined
+   * @param endTime The latest time at which the polynomial is defined
+   */
+  Trajectory(Vec3 c0, Vec3 c1, Vec3 c2, Vec3 c3, Vec3 c4, Vec3 c5,
+             double startTime, double endTime)
       : _coeffs { c0, c1, c2, c3, c4, c5 },
         _startTime(startTime),
         _endTime(endTime) {
     assert(startTime <= endTime);
-    boundingBox.initialized = false;
   }
 
-  // TODO: Initialize void (use quiet nans)
-  // TODO: Initialize with Trajectory object
-
+  //! Returns the 3D position of the polynomial at a given time.
+  /*!
+   * @param t Time at which to evaluate the polynomial (must be between startTime and endTime)
+   * @return Position of trajectory at time t
+   */
   Vec3 GetValue(double t) const {
     assert(t >= _startTime);
     assert(t <= _endTime);
@@ -35,42 +80,28 @@ class Trajectory {
         + _coeffs[2] * t * t * t + _coeffs[3] * t * t + _coeffs[4] * t
         + _coeffs[5];
   }
-  double GetAxisValue(int i, double t) const {
-    assert(t >= _startTime);
-    assert(t <= _endTime);
-    return _coeffs[0][i] * t * t * t * t * t + _coeffs[1][i] * t * t * t * t
-        + _coeffs[2][i] * t * t * t + _coeffs[3][i] * t * t + _coeffs[4][i] * t
-        + _coeffs[5][i];
-  }
 
+  //! Return the 3D vector of coefficients
   std::vector<Vec3> GetCoeffs() {
     return _coeffs;
   }
+
+  //! Return the start time of the trajectory
   double GetStartTime() const {
     return _startTime;
   }
+
+  //! Return the end time of the trajectory
   double GetEndTime() const {
     return _endTime;
   }
-  Trajectory GetTimeShiftedTraj(double shiftTime) {
-    double T2 = shiftTime * shiftTime;
-    double T3 = T2 * shiftTime;
-    double T4 = T3 * shiftTime;
-    double T5 = T4 * shiftTime;
-    Vec3 c0 = _coeffs[0];
-    Vec3 c1 = 5 * _coeffs[0] * shiftTime + _coeffs[1];
-    Vec3 c2 = 10 * _coeffs[0] * T2 + 4 * _coeffs[1] * shiftTime
-        + _coeffs[2];
-    Vec3 c3 = 10 * _coeffs[0] * T3 + 6 * _coeffs[1] * T2
-        + 3 * _coeffs[2] * shiftTime + _coeffs[3];
-    Vec3 c4 = 5 * _coeffs[0] * T4 + 4 * _coeffs[1] * T3
-        + 3 * _coeffs[2] * T2 + 2 * _coeffs[3] * shiftTime + _coeffs[4];
-    Vec3 c5 = _coeffs[0] * T5 + _coeffs[1] * T4 + _coeffs[2] * T3
-        + _coeffs[3] * T2 + _coeffs[4] * shiftTime + _coeffs[5];
-    return Trajectory(c0, c1, c2, c3, c4, c5, _startTime - shiftTime,
-                            _endTime - shiftTime);
-  }
 
+  //! Returns the coefficient of the time derivative of the trajectory
+  /*!
+   * @return A 5D vector of 3D coefficients representing the time derivative
+   * of the trajectory, where derivCoeffs[0] is a 3D vector of coefficients
+   * corresponding to t^4, derivCoeffs[1] corresponds to t^3, etc.
+   */
   std::vector<Vec3> GetDerivativeCoeffs() const {
     std::vector<Vec3> derivCoeffs;
     derivCoeffs.reserve(5);
@@ -80,62 +111,23 @@ class Trajectory {
     return derivCoeffs;
   }
 
-  void GetBoundingBox(Vec3 &outMinCorner, Vec3 &outMaxCorner) {
-    if (!boundingBox.initialized) {
-      //calculate the roots of the polynomial in each axis
-      Vec3 startVal = GetValue(_startTime);
-      Vec3 endVal = GetValue(_endTime);
-      for (int dim = 0; dim < 3; dim++) {
-        int rootCount;
-        double roots[4];
-        if (_coeffs[0][dim]) {
-          rootCount = magnet::math::quarticSolve(
-              4 * _coeffs[1][dim] / (5 * _coeffs[0][dim]),
-              3 * _coeffs[2][dim] / (5 * _coeffs[0][dim]),
-              2 * _coeffs[3][dim] / (5 * _coeffs[0][dim]),
-              _coeffs[4][dim] / _coeffs[0][dim], roots[0], roots[1], roots[2],
-              roots[3]);
-        } else {
-          rootCount = magnet::math::cubicSolve(
-              3 * _coeffs[2][dim] / (4 * _coeffs[1][dim]),
-              2 * _coeffs[3][dim] / (4 * _coeffs[1][dim]),
-              _coeffs[4][dim] / (4 * _coeffs[1][dim]), roots[0], roots[1],
-              roots[2]);
-        }
-        //Evaluate the acceleration at the boundaries of the period:
-        boundingBox.minCorner[dim] = std::min(startVal[dim], endVal[dim]);
-        boundingBox.maxCorner[dim] = std::max(startVal[dim], endVal[dim]);
-
-        //Evaluate at the maximum/minimum times:
-        for (int i = 0; i < rootCount; i++) {
-          if (roots[i] <= _startTime)
-            continue;
-          if (roots[i] >= _endTime)
-            continue;
-
-          boundingBox.minCorner[dim] = std::min(boundingBox.minCorner[dim],
-                                                GetAxisValue(dim, roots[i]));
-          boundingBox.maxCorner[dim] = std::max(boundingBox.maxCorner[dim],
-                                                GetAxisValue(dim, roots[i]));
-        }
-      }
-      boundingBox.initialized = true;
-    }
-    outMinCorner = boundingBox.minCorner;
-    outMaxCorner = boundingBox.maxCorner;
-  }
-
-// Returns the difference of two trajectories
-// The returned trajectory is only defined at times where this trajectory and rhs are defined
+  //! Returns the difference between this trajectory and a given trajectory.
+  /*!
+   * The trajectory that is returned is only defined at times where both
+   * trajectories are defined (both trajectories must overlap in time). The
+   * returned trajectory is the relative position of the two trajectories in
+   * time.
+   */
   Trajectory operator-(const Trajectory rhs) {
     double startTime = std::max(_startTime, rhs.GetStartTime());
     double endTime = std::min(_endTime, rhs.GetEndTime());
     return Trajectory(_coeffs[0] - rhs[0], _coeffs[1] - rhs[1],
-                            _coeffs[2] - rhs[2], _coeffs[3] - rhs[3],
-                            _coeffs[4] - rhs[4], _coeffs[5] - rhs[5], startTime,
-                            endTime);
+                      _coeffs[2] - rhs[2], _coeffs[3] - rhs[3],
+                      _coeffs[4] - rhs[4], _coeffs[5] - rhs[5], startTime,
+                      endTime);
   }
 
+  //! Returns the i-th 3D vector of coefficients.
   inline Vec3 operator[](int i) const {
     switch (i) {
       case 0:
@@ -157,24 +149,9 @@ class Trajectory {
     }
   }
 
-  void Print() {
-    for (int k = 0; k < 6; k++) {
-      printf("c%d = (", k);
-      for (int i = 0; i < 3; i++) {
-        printf("%f, ", _coeffs[k][i]);
-      }
-      printf("), ");
-    }
-    printf("\n");
-  }
-
-// TODO: Add dot product with direction function
-
  private:
   std::vector<Vec3> _coeffs;
   double _startTime, _endTime;
-  struct {
-    Vec3 minCorner, maxCorner;
-    bool initialized;
-  } boundingBox;
 };
+
+}

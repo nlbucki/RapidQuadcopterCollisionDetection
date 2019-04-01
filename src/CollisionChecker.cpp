@@ -1,7 +1,29 @@
+/*!
+ * Rapid Collision Detection for Multicopter Trajectories
+ *
+ * Copyright 2019 by Nathan Bucki <nathan_bucki@berkeley.edu>
+ *
+ * This code is free software: you can redistribute
+ * it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This code is distributed in the hope that it will
+ * be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with the code.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "RapidCollisionDetection/CollisionChecker.hpp"
 
+using namespace CommonMath;
+using namespace RapidCollisionChecker;
+
 typename CollisionChecker::CollisionResult CollisionChecker::CollisionCheck(
-    Boundary boundary) {
+    CommonMath::Boundary boundary) {
   //Ensure that the normal is a unit vector:
   boundary.normal = boundary.normal.GetUnitVector();
 
@@ -46,7 +68,7 @@ typename CollisionChecker::CollisionResult CollisionChecker::CollisionCheck(
 }
 
 typename CollisionChecker::CollisionResult CollisionChecker::CollisionCheck(
-    std::shared_ptr<ConvexObj> obstacle, double minTimeSection) {
+    std::shared_ptr<CommonMath::ConvexObj> obstacle, double minTimeSection) {
   // First check if the obstacle is in the bounding box of the trajectory
   if (obstacle->IsPointInside(_traj.GetValue(_traj.GetStartTime()))
       || obstacle->IsPointInside(_traj.GetValue(_traj.GetEndTime()))) {
@@ -58,7 +80,7 @@ typename CollisionChecker::CollisionResult CollisionChecker::CollisionCheck(
 }
 
 typename CollisionChecker::CollisionResult CollisionChecker::CollisionCheckSection(
-    double ts, double tf, std::shared_ptr<ConvexObj> obstacle,
+    double ts, double tf, std::shared_ptr<CommonMath::ConvexObj> obstacle,
     double minTimeSection) {
   double midTime = (ts + tf) / 2;
   Vec3 midpoint = _traj.GetValue(midTime);
@@ -72,7 +94,7 @@ typename CollisionChecker::CollisionResult CollisionChecker::CollisionCheckSecti
   }
 
   // Get the tangent plane
-  Boundary tangentPlane = obstacle->GetTangentPlane(midpoint);
+  CommonMath::Boundary tangentPlane = obstacle->GetTangentPlane(midpoint);
 
   // Project trajectory into tangent plane
   double c[5] = { 0, 0, 0, 0, 0 };

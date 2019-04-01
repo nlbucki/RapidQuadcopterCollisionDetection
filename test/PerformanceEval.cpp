@@ -11,6 +11,8 @@
 
 using namespace std;
 using namespace std::chrono;
+using namespace CommonMath;
+using namespace RapidCollisionChecker;
 using namespace RapidQuadrocopterTrajectoryGenerator;
 
 int main(void) {

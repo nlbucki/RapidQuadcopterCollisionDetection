@@ -1,12 +1,28 @@
 /*!
- * Copyright 2016 by Muellerlab, UC Berkeley
+ * Rapid Collision Detection for Multicopter Trajectories
+ *
+ * Copyright 2019 by High Performance Robotics Lab, UC Berkeley
+ *
+ * This code is free software: you can redistribute
+ * it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This code is distributed in the hope that it will
+ * be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with the code.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #pragma once
 #include <assert.h>
 #include <math.h>
 #include <limits>
-#include <cerrno>
+
+namespace CommonMath {
 
 class Vec3;
 inline Vec3 operator*(const double lhs, const Vec3 rhs);
@@ -14,10 +30,7 @@ inline Vec3 operator*(const Vec3 lhs, const double rhs);
 inline Vec3 operator*(const Vec3 lhs, const int rhs);
 inline Vec3 operator*(const int lhs, const Vec3 rhs);
 
-//! 3D vector class
-/*!
- * A 3D vector class, to make passing arguments easier, and allow easy addition etc. of vectors.
- */
+//! 3D vector class with common vector operations.
 class Vec3 {
  public:
   double x, y, z;  //!< the three components of the vector
@@ -43,7 +56,7 @@ class Vec3 {
       : x(in.x),
         y(in.y),
         z(in.z) {
-  }  //!< Initialise from Vec3d
+  }  //!< Initialise from Vec3
 
   //!Getter function, index 0 <-> x, 1 <-> y, 2 <-> z
   inline double operator[](int i) const {
@@ -140,7 +153,7 @@ class Vec3 {
   }
 };
 
-//Multiply with scalar of same type as Vec3:
+//Multiply with scalar of double type:
 inline Vec3 operator*(const double lhs, const Vec3 rhs) {
   return Vec3(lhs * rhs.x, lhs * rhs.y, lhs * rhs.z);
 }
@@ -157,3 +170,4 @@ inline Vec3 operator*(const int lhs, const Vec3 rhs) {
   return Vec3(lhs * rhs.x, lhs * rhs.y, lhs * rhs.z);
 }
 
+}

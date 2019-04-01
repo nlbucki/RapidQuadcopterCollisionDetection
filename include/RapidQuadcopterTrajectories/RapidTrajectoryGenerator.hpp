@@ -20,6 +20,7 @@
 /* Nathan:
  * Reformatted
  * Added StateIndeterminable
+ * Added GetInputFeasibilityResultName()
  * Added GetFinalTime()
  * Added GetTrajectory()
  */
@@ -74,16 +75,17 @@ class RapidTrajectoryGenerator {
   };
 
   //! Constructor, user must define initial state, and the direction of gravity.
-  RapidTrajectoryGenerator(const Vec3 x0, const Vec3 v0, const Vec3 a0,
-                           const Vec3 gravity);
+  RapidTrajectoryGenerator(const CommonMath::Vec3 x0, const CommonMath::Vec3 v0,
+                           const CommonMath::Vec3 a0,
+                           const CommonMath::Vec3 gravity);
 
   //set the final state for all axes:
   //! Fix the full position at the end time (see also the per-axis functions).
-  void SetGoalPosition(const Vec3 in);
+  void SetGoalPosition(const CommonMath::Vec3 in);
   //! Fix the full velocity at the end time (see also the per-axis functions).
-  void SetGoalVelocity(const Vec3 in);
+  void SetGoalVelocity(const CommonMath::Vec3 in);
   //! Fix the full acceleration at the end time (see also the per-axis functions).
-  void SetGoalAcceleration(const Vec3 in);
+  void SetGoalAcceleration(const CommonMath::Vec3 in);
 
   //set final state per axis:
   //! Fix the position at the end time in one axis. If not set, it is left free.
@@ -151,28 +153,30 @@ class RapidTrajectoryGenerator {
    * @param boundaryNormal A vector pointing in the allowable direction, away from the boundary.
    * @return An instance of StateFeasibilityResult.
    */
-  StateFeasibilityResult CheckPositionFeasibility(Vec3 boundaryPoint,
-                                                  Vec3 boundaryNormal);
+  StateFeasibilityResult CheckPositionFeasibility(
+      CommonMath::Vec3 boundaryPoint, CommonMath::Vec3 boundaryNormal);
 
   //! Return the jerk along the trajectory at time t
-  Vec3 GetJerk(double t) const {
-    return Vec3(_axis[0].GetJerk(t), _axis[1].GetJerk(t), _axis[2].GetJerk(t));
+  CommonMath::Vec3 GetJerk(double t) const {
+    return CommonMath::Vec3(_axis[0].GetJerk(t), _axis[1].GetJerk(t),
+                            _axis[2].GetJerk(t));
   }
   //! Return the acceleration along the trajectory at time t
-  Vec3 GetAcceleration(double t) const {
-    return Vec3(_axis[0].GetAcceleration(t), _axis[1].GetAcceleration(t),
-                _axis[2].GetAcceleration(t));
+  CommonMath::Vec3 GetAcceleration(double t) const {
+    return CommonMath::Vec3(_axis[0].GetAcceleration(t),
+                            _axis[1].GetAcceleration(t),
+                            _axis[2].GetAcceleration(t));
   }
   ;
   //! Return the velocity along the trajectory at time t
-  Vec3 GetVelocity(double t) const {
-    return Vec3(_axis[0].GetVelocity(t), _axis[1].GetVelocity(t),
-                _axis[2].GetVelocity(t));
+  CommonMath::Vec3 GetVelocity(double t) const {
+    return CommonMath::Vec3(_axis[0].GetVelocity(t), _axis[1].GetVelocity(t),
+                            _axis[2].GetVelocity(t));
   }
   //! Return the position along the trajectory at time t
-  Vec3 GetPosition(double t) const {
-    return Vec3(_axis[0].GetPosition(t), _axis[1].GetPosition(t),
-                _axis[2].GetPosition(t));
+  CommonMath::Vec3 GetPosition(double t) const {
+    return CommonMath::Vec3(_axis[0].GetPosition(t), _axis[1].GetPosition(t),
+                            _axis[2].GetPosition(t));
   }
 
   double GetFinalTime() {
@@ -180,7 +184,7 @@ class RapidTrajectoryGenerator {
   }
 
   //! Return the quadrocopter's normal vector along the trajectory at time t
-  Vec3 GetNormalVector(double t) const {
+  CommonMath::Vec3 GetNormalVector(double t) const {
     return (GetAcceleration(t) - _grav).GetUnitVector();
   }
   ;
@@ -204,7 +208,7 @@ class RapidTrajectoryGenerator {
    * @param timeStep The timestep size for the finite differencing [s].
    * @return The body rates, expressed in the inertial frame [rad/s]
    */
-  Vec3 GetOmega(double t, double timeStep) const;
+  CommonMath::Vec3 GetOmega(double t, double timeStep) const;
 
   //! Return the total cost of the trajectory.
   double GetCost(void) const {
@@ -224,15 +228,33 @@ class RapidTrajectoryGenerator {
     return _axis[i].GetParamGamma();
   }
 
-  Trajectory GetTrajectory() {
-    return Trajectory(
-        Vec3(GetAxisParamAlpha(0), GetAxisParamAlpha(1), GetAxisParamAlpha(2))
-            / 120,
-        Vec3(GetAxisParamBeta(0), GetAxisParamBeta(1), GetAxisParamBeta(2))
-            / 24,
-        Vec3(GetAxisParamGamma(0), GetAxisParamGamma(1), GetAxisParamGamma(2))
-            / 6,
+  //! Returns a Trajectory object representing the generated trajectory.
+  CommonMath::Trajectory GetTrajectory() {
+    return CommonMath::Trajectory(
+        CommonMath::Vec3(GetAxisParamAlpha(0), GetAxisParamAlpha(1),
+                         GetAxisParamAlpha(2)) / 120,
+        CommonMath::Vec3(GetAxisParamBeta(0), GetAxisParamBeta(1),
+                         GetAxisParamBeta(2)) / 24,
+        CommonMath::Vec3(GetAxisParamGamma(0), GetAxisParamGamma(1),
+                         GetAxisParamGamma(2)) / 6,
         GetAcceleration(0) / 2, GetVelocity(0), GetPosition(0), 0, _tf);
+  }
+
+  //! Used for printing feasibility results to the console.
+  static const char* GetInputFeasibilityResultName(InputFeasibilityResult fr) {
+    switch (fr) {
+      case RapidTrajectoryGenerator::InputFeasible:
+        return "Feasible";
+      case RapidTrajectoryGenerator::InputIndeterminable:
+        return "Indeterminable";
+      case RapidTrajectoryGenerator::InputInfeasibleThrustHigh:
+        return "InfeasibleThrustHigh";
+      case RapidTrajectoryGenerator::InputInfeasibleThrustLow:
+        return "InfeasibleThrustLow";
+      case RapidTrajectoryGenerator::InputInfeasibleRates:
+        return "InfeasibleRates";
+    }
+    return "Unknown!";
   }
 
  private:
@@ -244,7 +266,7 @@ class RapidTrajectoryGenerator {
                                                       double minTimeSection);
 
   SingleAxisTrajectory _axis[3];  //!<The axes along the single trajectories
-  Vec3 _grav;  //!<gravity in the frame of the trajectory
+  CommonMath::Vec3 _grav;  //!<gravity in the frame of the trajectory
   double _tf;  //!<trajectory end time [s]
 };
 

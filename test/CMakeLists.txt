@@ -4,4 +4,7 @@ target_link_libraries(PerformanceEval RapidCollisionDetection RapidQuadcopterTra
 add_executable(ForestPerformanceEval ForestPerformanceEval.cpp)
 target_link_libraries(ForestPerformanceEval RapidCollisionDetection RapidQuadcopterTrajectories)
 
+add_executable(ExampleStoppingTraj ExampleStoppingTraj.cpp)
+target_link_libraries(ExampleStoppingTraj RapidCollisionDetection RapidQuadcopterTrajectories)
+
 include_directories(${RapidCollisionDetection_SOURCE_DIR}/include)

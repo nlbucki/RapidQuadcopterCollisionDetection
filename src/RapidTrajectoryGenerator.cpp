@@ -22,13 +22,13 @@
  * Fixed problems with GetOmega (TEST THIS)
  */
 
-#include "RapidQuadcopterTrajectories/RapidTrajectoryGenerator.hpp"
-#include "RootFinder/quartic.hpp"
-
 #include <algorithm>
 #include <limits>
 #include <cerrno>
+#include "RapidQuadcopterTrajectories/RapidTrajectoryGenerator.hpp"
+#include "RootFinder/quartic.hpp"
 
+using namespace CommonMath;
 using namespace RapidQuadrocopterTrajectoryGenerator;
 
 RapidTrajectoryGenerator::RapidTrajectoryGenerator(const Vec3 x0, const Vec3 v0,

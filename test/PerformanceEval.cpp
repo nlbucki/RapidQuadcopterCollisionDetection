@@ -195,15 +195,15 @@ int main(void) {
         > (endStateFeas - startStateFeas).count();
     nsStateCheckTime += thisCheckTime;
     switch (stateFeas) {
-      case RapidTrajectoryGenerator::StateFeasible:
+      case CollisionChecker::NoCollision:
         numStateFeasible++;
         nsStateFeasCheck += thisCheckTime;
         break;
-      case RapidTrajectoryGenerator::StateInfeasible:
+      case CollisionChecker::Collision:
         numStateInfeasible++;
         nsStateInfeasCheck += thisCheckTime;
         break;
-      case RapidTrajectoryGenerator::StateIndeterminable:
+      case CollisionChecker::CollisionIndeterminable:
         numStateIndeterminable++;
         nsStateIndetCheck += thisCheckTime;
         break;
@@ -257,9 +257,9 @@ int main(void) {
   monteSim << "Percent of trajectories that were collision-free  = "
       << 100.0 * double(numStateFeasible) / numTrajToGenerate << endl;
   monteSim << "Percent of trajectories with collision  = "
-        << 100.0 * double(numStateInfeasible) / numTrajToGenerate << endl;
+      << 100.0 * double(numStateInfeasible) / numTrajToGenerate << endl;
   monteSim << "Percent of trajectories with collision indeterminable  = "
-        << 100.0 * double(numStateIndeterminable) / numTrajToGenerate << endl;
+      << 100.0 * double(numStateIndeterminable) / numTrajToGenerate << endl;
   monteSim.close();
 
   return 0;

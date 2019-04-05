@@ -17,9 +17,9 @@
  * along with the code.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Nathan:
+/* Modifications made by Nathan Bucki from original files at
+ * https://github.com/markwmuller/RapidQuadrocopterTrajectories:
  * Reformatted
- * Added StateIndeterminable
  * Added GetInputFeasibilityResultName()
  * Added GetFinalTime()
  * Added GetTrajectory()
@@ -71,7 +71,6 @@ class RapidTrajectoryGenerator {
   enum StateFeasibilityResult {
     StateFeasible = 0,  //!<The trajectory is feasible w.r.t. the test
     StateInfeasible = 1,  //!<Trajectory is infeasible
-    StateIndeterminable = 2,  //!<Cannot determine whether the trajectory is feasible
   };
 
   //! Constructor, user must define initial state, and the direction of gravity.
@@ -179,6 +178,7 @@ class RapidTrajectoryGenerator {
                             _axis[2].GetPosition(t));
   }
 
+  //! Return duration of the trajectory
   double GetFinalTime() {
     return _tf;
   }

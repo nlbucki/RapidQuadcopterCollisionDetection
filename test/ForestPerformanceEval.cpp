@@ -85,8 +85,7 @@ int main(void) {
   double timeRangeMax = 2.0;  // Maximum trajectory duration [s]
 
   // Set up random number generator using sampling ranges.
-  random_device rd;  // Will be used to obtain a seed for the random number engine
-  mt19937 gen(rd());  // Standard mersenne_twister_engine seeded with rd()
+  mt19937 gen(0);  // Use a constant seed so that trials are repeatable
   uniform_real_distribution<> randPos(-posRange, posRange);
   uniform_real_distribution<> randVelYZ(-velRangeYZ, velRangeYZ);
   uniform_real_distribution<> randVelX(velRangeXmin, velRangeXmax);
@@ -296,7 +295,7 @@ int main(void) {
       << endl;
   cout << "Average time to find first collision-free trajectory [ns] = "
       << double(nsFirstFeasTrajTime) / numSims << endl;
-  cout << "Average time to do everything per trajectory [ns] = "
+  cout << "Average total computation time per trajectory [ns] = "
       << double(nsAllTrajTime) / numSims / numTrajToGeneratePerSim << endl;
   cout << "Percent of trajectories that were input feasible = "
       << 100.0 * double(numInputFeasible) / numSims / numTrajToGeneratePerSim
@@ -317,7 +316,7 @@ int main(void) {
       << endl;
   monteTxt << "Average time to find first collision-free trajectory [ns] = "
       << double(nsFirstFeasTrajTime) / numSims << endl;
-  monteTxt << "Average time to do everything per trajectory [ns] = "
+  monteTxt << "Average total computation time per trajectory [ns] = "
       << double(nsAllTrajTime) / numSims / numTrajToGeneratePerSim << endl;
   monteTxt << "Percent of trajectories that were input feasible = "
       << 100.0 * double(numInputFeasible) / numSims / numTrajToGeneratePerSim

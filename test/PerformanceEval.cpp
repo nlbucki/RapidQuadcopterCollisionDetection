@@ -43,8 +43,8 @@ using namespace RapidQuadrocopterTrajectoryGenerator;
  */
 int main(void) {
   // The number of Monte Carlo trials to run. Note that 10^9 trails were used in the
-  // associated paper, but here we only run 10^6 so that users can see results quickly.
-  int numTrajToGenerate = 1000000;
+  // associated paper, but here we only run 10^7 so that users can see results quickly.
+  int numTrajToGenerate = 10000000;
 
   // These are the thrust and angular velocity constraints used to reject input-infeasible
   // trajectories.
@@ -65,8 +65,7 @@ int main(void) {
   double radiusMax = 1.5;  // Minimum radius of sphere [m]
 
   // Set up random number generator using sampling ranges.
-  random_device rd;  // Will be used to obtain a seed for the random number engine
-  mt19937 gen(rd());  // Standard mersenne_twister_engine seeded with rd()
+  mt19937 gen(0);  // Use a constant seed so that trials are repeatable
   uniform_real_distribution<> randPos(-posRange, posRange);
   uniform_real_distribution<> randVel(-velRange, velRange);
   uniform_real_distribution<> randAcc(-accRange, accRange);

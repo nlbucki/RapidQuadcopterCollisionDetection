@@ -5,7 +5,7 @@ High Performance Robotics Lab, Dept. of Mechanical Engineering, UC Berkeley
 
 This repository contains source code implementing an algorithm for quickly detecting whether certain polynomial trajectories in time intersect with convex obstacles. The algorithm is used in conjunction with an existing multicopter trajectory generation method (available [here](https://github.com/markwmuller/RapidQuadrocopterTrajectories) and also included in this repository) to achieve rapid, obstacle-aware motion planning in environments with both static convex obstacles and dynamic convex obstacles whose boundaries do not rotate.
 
-The algorithm is described in a paper submitted to the IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), and will be made available for download if accepted.
+The algorithm is described in a paper submitted to the IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS). A preprint version of the paper is available [here](https://arxiv.org/abs/1904.04223).
 
 ## Getting Started
 

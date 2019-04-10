@@ -324,6 +324,7 @@ int main(void) {
   monteTxt << "Percent of trajectories that were collision free = "
       << 100.0 * double(numStateFeasible) / numSims / numTrajToGeneratePerSim
       << endl;
+  monteTxt.close();
 
   return 0;
 }

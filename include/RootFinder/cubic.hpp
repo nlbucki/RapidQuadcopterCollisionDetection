@@ -19,10 +19,17 @@ Changes:
   - some readibility tweaks.
 */
 
+/* Slightly modified this file from https://github.com/markwmuller/RapidQuadrocopterTrajectories
+ * Nathan Bucki (nathan_bucki@berkeley.edu)
+ * Changes:
+ *  - added errno to detect when acos fails
+ */
+
 #pragma once
 
 #include <cmath>
 #include <limits>
+#include <cerrno>
 #include "quadratic.hpp"
 
 //WinDef.h defines a max() macro, which screws up compilation here...
@@ -247,7 +254,11 @@ namespace magnet
       }
 
       double t = -v / (scube + scube);
+      errno = 0;
       double k = std::acos(t) / 3.0;
+      if (errno) {
+        k = 0;
+      }
       double cosk = std::cos(k);
       root1 = (s + s) * cosk - p / 3.0;
 

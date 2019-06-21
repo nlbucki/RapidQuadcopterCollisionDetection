@@ -22,7 +22,7 @@
 #include <algorithm>
 #include "CommonMath/Trajectory.hpp"
 #include "CommonMath/ConvexObj.hpp"
-#include "RootFinder/quartic.hpp"
+#include "Quartic/quartic.h"
 
 namespace RapidCollisionChecker {
 

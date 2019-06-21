@@ -46,12 +46,10 @@ typename CollisionChecker::CollisionResult CollisionChecker::CollisionCheck(
 
   size_t rootCount;
   if (fabs(c[0]) > double(1e-6)) {
-    rootCount = magnet::math::quarticSolve(c[1] / c[0], c[2] / c[0],
-                                           c[3] / c[0], c[4] / c[0], roots[2],
-                                           roots[3], roots[4], roots[5]);
+    rootCount = Quartic::solve_quartic(c[1] / c[0], c[2] / c[0],
+                                           c[3] / c[0], c[4] / c[0], roots);
   } else {
-    rootCount = magnet::math::cubicSolve(c[2] / c[1], c[3] / c[1], c[4] / c[1],
-                                         roots[2], roots[3], roots[4]);
+    rootCount = Quartic::solveP3(c[2] / c[1], c[3] / c[1], c[4] / c[1], roots);
   }
 
   for (unsigned i = 0; i < (rootCount + 2); i++) {
@@ -116,12 +114,10 @@ typename CollisionChecker::CollisionResult CollisionChecker::CollisionCheckSecti
   double roots[4];
   int rootCount;
   if (fabs(c[0]) > double(1e-6)) {
-    rootCount = magnet::math::quarticSolve(c[1] / c[0], c[2] / c[0],
-                                           c[3] / c[0], c[4] / c[0], roots[0],
-                                           roots[1], roots[2], roots[3]);
+    rootCount = Quartic::solve_quartic(c[1] / c[0], c[2] / c[0],
+                                           c[3] / c[0], c[4] / c[0], roots);
   } else {
-    rootCount = magnet::math::cubicSolve(c[2] / c[1], c[3] / c[1], c[4] / c[1],
-                                         roots[0], roots[1], roots[2]);
+    rootCount = Quartic::solveP3(c[2] / c[1], c[3] / c[1], c[4] / c[1], roots);
   }
   // The first "rootCount" entries of roots are now the unordered roots
   std::sort(roots, roots + rootCount);

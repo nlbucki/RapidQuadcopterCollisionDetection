@@ -13,13 +13,13 @@ radiusMin = 0.1
 radiusMax = 1.5
 
 Results:
-Average time spent defining/initializing things [ns] = 242.734
-Average time spent generating the trajectory [ns] = 58.8152
-Average time spent checking for input feasibility [ns] = 500.188
-Average time spent checking for collisions [ns] = 1385.43
-Average time spent checking for collisions when no collision occurs [ns] = 1388.52
-Average time spent checking for collisions when a collision occurs [ns] = 1311.06
-Average time spent checking for collisions when a collision cannot be determined [ns] = 10149.6
+Average time spent defining/initializing things [ns] = 239.964
+Average time spent generating the trajectory [ns] = 58.0883
+Average time spent checking for input feasibility [ns] = 489.812
+Average time spent checking for collisions [ns] = 579.99
+Average time spent checking for collisions when no collision occurs [ns] = 580.347
+Average time spent checking for collisions when a collision occurs [ns] = 571.357
+Average time spent checking for collisions when a collision cannot be determined [ns] = 3599
 Percent of trajectories that were collision-free  = 96.0038
 Percent of trajectories with collision  = 3.99612
 Percent of trajectories with collision indeterminable  = 8e-05

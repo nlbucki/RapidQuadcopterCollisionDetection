@@ -19,11 +19,11 @@ treeSideLen = 0.5
 treeHeight = 5
 
 Results:
-Average time spent generating the trajectory [ns] = 57.2461
-Average time spent checking for input feasibility [ns] = 491.923
-Average time spent checking for collisions [ns] = 7330.79
-Average time spent checking for collisions per obstacle [ns] = 1466.16
-Average time to find first collision-free trajectory [ns] = 13959
-Average total computation time per trajectory [ns] = 7981.13
+Average time spent generating the trajectory [ns] = 57.4704
+Average time spent checking for input feasibility [ns] = 484.094
+Average time spent checking for collisions [ns] = 3182.22
+Average time spent checking for collisions per obstacle [ns] = 636.444
+Average time to find first collision-free trajectory [ns] = 6772.66
+Average total computation time per trajectory [ns] = 3826.89
 Percent of trajectories that were input feasible = 63.9533
-Percent of trajectories that were collision free = 60.3819
+Percent of trajectories that were collision free = 60.381
